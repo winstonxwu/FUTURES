@@ -87,6 +87,22 @@ export interface MarketNewsResponse {
   source: string;
 }
 
+export interface EquityCurvePoint {
+  time: number;
+  equity: number;
+  change_pct: number;
+  timestamp: number;
+  normalized: number;
+}
+
+export interface EquityCurveResponse {
+  equity_curve: EquityCurvePoint[];
+  current_equity: number;
+  starting_equity: number;
+  total_pnl: number;
+  timestamp: string;
+}
+
 class APIClient {
   private baseURL: string;
 
@@ -147,6 +163,10 @@ class APIClient {
 
   async getMarketNews(limit: number = 20, category: string = 'general'): Promise<MarketNewsResponse> {
     return this.request<MarketNewsResponse>(`/market/news?limit=${limit}&category=${category}`);
+  }
+
+  async getEquityCurve(): Promise<EquityCurveResponse> {
+    return this.request<EquityCurveResponse>('/market/equity-curve');
   }
 }
 

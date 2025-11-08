@@ -650,6 +650,168 @@ async def api_get_market_news(limit: int = 20, category: str = "general"):
     return await _get_market_news(limit=limit, category=category)
 
 
+# Intraday Equity Curve endpoint
+async def _get_intraday_equity_curve():
+    """Generate intraday equity curve data based on P&L and market trends"""
+    # Get current positions to calculate starting equity
+    # Use the positions endpoint logic directly
+    positions = MOCK_POSITIONS.copy()
+    current_capital = MOCK_CAPITAL
+    
+    # Calculate P&L for each position (mock for now)
+    for position in positions:
+        if "current_price" not in position:
+            position["current_price"] = position.get("entry_price", 0) * random.uniform(0.95, 1.05)
+        position["pnl"] = (position["current_price"] - position["entry_price"]) * position["quantity"]
+        position["pnl_pct"] = ((position["current_price"] / position["entry_price"]) - 1) * 100
+    
+    total_exposure = sum(p["quantity"] * p["entry_price"] for p in positions)
+    positions_data = {
+        "positions": positions,
+        "total_exposure": total_exposure,
+        "capital": current_capital,
+    }
+    current_capital = positions_data.get("capital", MOCK_CAPITAL)
+    total_exposure = positions_data.get("total_exposure", 0)
+    
+    # Calculate current total equity (capital + unrealized P&L)
+    total_pnl = sum(p.get("pnl", 0) for p in positions_data.get("positions", []))
+    current_equity = current_capital + total_exposure + total_pnl
+    
+    # Get market trends to influence the curve
+    try:
+        movements_data = await _get_daily_movements()
+        # Use market movements to create realistic fluctuations
+        market_volatility = 0.02  # Base volatility
+        if movements_data.get("jumps") or movements_data.get("dips"):
+            # Calculate average movement magnitude
+            all_movements = movements_data.get("jumps", []) + movements_data.get("dips", [])
+            if all_movements:
+                avg_movement = sum(abs(m.get("change_pct", 0)) for m in all_movements[:10]) / min(len(all_movements), 10)
+                market_volatility = min(avg_movement / 100, 0.05)  # Cap at 5%
+    except:
+        market_volatility = 0.02
+    
+    # Generate intraday equity curve (simulate hourly data for a trading day)
+    # Trading day: 9:30 AM to 4:00 PM = 6.5 hours = 390 minutes
+    # Sample every 5 minutes = 78 data points
+    num_points = 78
+    equity_curve = []
+    base_equity = current_equity * 0.95  # Start slightly below current (simulating opening)
+    
+    # Create a realistic intraday pattern with trends
+    
+    # Generate trend (slight upward bias if positive P&L, downward if negative)
+    trend_direction = 1 if total_pnl > 0 else -1
+    trend_strength = min(abs(total_pnl) / current_capital, 0.03) if current_capital > 0 else 0.01
+    
+    # Create smooth curve using bounded sine waves with noise
+    # This ensures good variation without exponential growth
+    import math
+    
+    max_deviation_pct = 0.08  # Max 8% deviation from base
+    max_deviation = base_equity * max_deviation_pct
+    
+    # Pre-generate a smooth curve using sine waves
+    for i in range(num_points):
+        # Time progression (0 to 1)
+        t = i / (num_points - 1)
+        
+        # Add some intraday patterns (morning volatility, lunch lull, afternoon activity)
+        if t < 0.2:  # First hour: high volatility
+            volatility_mult = 1.3
+        elif t < 0.4:  # Mid-morning: moderate
+            volatility_mult = 1.0
+        elif t < 0.6:  # Lunch: lower volatility
+            volatility_mult = 0.7
+        else:  # Afternoon: increasing activity
+            volatility_mult = 1.1
+        
+        # Create a smooth curve using sine waves with different frequencies
+        # Main trend wave (slow oscillation over the day)
+        main_wave = math.sin(t * math.pi * 1.5) * 0.5
+        
+        # Secondary wave (medium frequency)
+        secondary_wave = math.sin(t * math.pi * 3.5) * 0.25
+        
+        # Tertiary wave (higher frequency, smaller amplitude)
+        tertiary_wave = math.sin(t * math.pi * 7) * 0.15
+        
+        # Add subtle trend based on P&L (very small)
+        trend_component = trend_direction * trend_strength * 0.3 * t
+        
+        # Add bounded random noise (scaled by volatility)
+        noise_scale = 0.1 * volatility_mult
+        noise = random.gauss(0, noise_scale)
+        noise = max(-0.3, min(0.3, noise))  # Cap noise
+        
+        # Combine all components (all bounded between -1 and 1)
+        wave_sum = main_wave + secondary_wave + tertiary_wave + trend_component + noise
+        deviation_factor = max(-1.0, min(1.0, wave_sum))
+        
+        # Calculate deviation from base (bounded)
+        current_deviation = deviation_factor * max_deviation
+        
+        # Calculate equity (simple addition, no compounding)
+        current_equity_value = base_equity + current_deviation
+        
+        # Soft bounds - don't force to exact bounds, allow natural variation
+        # Only clamp if it goes significantly out of range
+        if current_equity_value < base_equity * 0.90:
+            current_equity_value = base_equity * 0.90 + random.uniform(0, base_equity * 0.02)
+        elif current_equity_value > base_equity * 1.10:
+            current_equity_value = base_equity * 1.10 - random.uniform(0, base_equity * 0.02)
+        
+        # Calculate percentage change from base
+        change_pct = ((current_equity_value - base_equity) / base_equity) * 100
+        
+        equity_curve.append({
+            "time": t,
+            "equity": round(current_equity_value, 2),
+            "change_pct": round(change_pct, 4),
+            "timestamp": i * 5  # Minutes since market open
+        })
+    
+    # Normalize to visualization range (0-100 for bar heights)
+    # Add padding to ensure variation is visible even with small ranges
+    if equity_curve:
+        equity_values = [p["equity"] for p in equity_curve]
+        min_equity = min(equity_values)
+        max_equity = max(equity_values)
+        
+        # Add small padding to range to ensure all values are visible
+        if max_equity > min_equity:
+            range_equity = max_equity - min_equity
+            # Scale to 0-100 range
+            for point in equity_curve:
+                normalized = ((point["equity"] - min_equity) / range_equity) * 100
+                point["normalized"] = round(normalized, 2)
+        else:
+            # If all values are the same, set to middle range for visibility
+            for point in equity_curve:
+                point["normalized"] = 50.0
+    
+    return {
+        "equity_curve": equity_curve,
+        "current_equity": round(current_equity, 2),
+        "starting_equity": round(base_equity, 2),
+        "total_pnl": round(total_pnl, 2),
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.get("/market/equity-curve")
+async def get_equity_curve():
+    """Get intraday equity curve data"""
+    return await _get_intraday_equity_curve()
+
+
+@api_router.get("/market/equity-curve")
+async def api_get_equity_curve():
+    """Get intraday equity curve data (under /api/auth prefix)"""
+    return await _get_intraday_equity_curve()
+
+
 # Auth models
 class SignupRequest(BaseModel):
     email: str
