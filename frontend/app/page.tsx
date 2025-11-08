@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient, HealthStatus, PositionsResponse } from '@/lib/api-client';
+import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const { user, logout, isAuthenticated } = useAuth();
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [positions, setPositions] = useState<PositionsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [animateNumbers, setAnimateNumbers] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,9 +87,58 @@ export default function DashboardPage() {
                 LLM-Powered Algorithmic Trading Platform
               </p>
             </div>
-            <div className="flex items-center gap-3 px-4 py-2 glass-card rounded-full">
-              <div className={`w-2 h-2 rounded-full ${health?.status === 'healthy' ? 'bg-green-400 pulse-glow' : 'bg-red-400'}`}></div>
-              <span className="text-sm font-medium">{health?.status === 'healthy' ? 'System Online' : 'System Offline'}</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 px-4 py-2 glass-card rounded-full">
+                <div className={`w-2 h-2 rounded-full ${health?.status === 'healthy' ? 'bg-green-400 pulse-glow' : 'bg-red-400'}`}></div>
+                <span className="text-sm font-medium">{health?.status === 'healthy' ? 'System Online' : 'System Offline'}</span>
+              </div>
+
+              {/* User Profile Menu */}
+              {isAuthenticated && user && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-3 px-4 py-2 glass-card rounded-full hover:bg-blue-500/10 transition-all"
+                  >
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium">{user.name}</span>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-56 glass-card rounded-xl p-2 shadow-2xl z-50">
+                      <div className="px-3 py-2 border-b border-[var(--border-color)]">
+                        <p className="text-sm font-semibold">{user.name}</p>
+                        <p className="text-xs text-[var(--foreground-secondary)]">{user.email}</p>
+                      </div>
+                      <Link
+                        href="/auth"
+                        className="block px-3 py-2 text-sm hover:bg-blue-500/10 rounded-lg transition-colors mt-2"
+                      >
+                        Profile Settings
+                      </Link>
+                      <button
+                        onClick={logout}
+                        className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Login Button if not authenticated */}
+              {!isAuthenticated && (
+                <Link
+                  href="/auth"
+                  className="px-5 py-2 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition-all"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
         </div>

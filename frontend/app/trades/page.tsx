@@ -108,7 +108,7 @@ export default function TradesPage() {
               </label>
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-2xl font-bold gradient-text">{formData.s_final.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-white">{formData.s_final.toFixed(2)}</span>
                   <span className="text-sm text-[var(--foreground-secondary)]">
                     {formData.s_final < 0.3 ? 'Low' : formData.s_final < 0.7 ? 'Medium' : 'High'} Conviction
                   </span>
@@ -170,13 +170,12 @@ export default function TradesPage() {
             <button
               type="submit"
               disabled={loading}
-              className="relative w-full py-5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none overflow-hidden group"
+              className="w-full py-5 bg-white text-black rounded-xl font-bold text-lg hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <span className="relative flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-5 h-5 border-3 border-black border-t-transparent rounded-full animate-spin"></div>
                     Executing Trade...
                   </>
                 ) : (

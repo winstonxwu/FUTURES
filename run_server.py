@@ -4,9 +4,12 @@ Simple server runner for ValueCell AI Trader Frontend
 This creates a minimal FastAPI server that the frontend can connect to.
 """
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from pydantic import BaseModel
+import secrets
+import hashlib
 
 # Create FastAPI app
 app = FastAPI(title="ValueCell AI Trader", version="1.0.0")
@@ -23,6 +26,24 @@ app.add_middleware(
 # Mock data for demo
 MOCK_POSITIONS = []
 MOCK_CAPITAL = 1000.0
+
+# Mock user database (in-memory for demo)
+MOCK_USERS = {}
+
+# Auth models
+class SignupRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class AuthResponse(BaseModel):
+    token: str
+    user: dict
+    message: str
 
 @app.get("/")
 async def root():
@@ -69,6 +90,68 @@ async def execute_trade(trade_data: dict):
         "quantity": trade_data.get("quantity", 10),
         "price": 150.00,  # Mock price
         "message": "Trade executed successfully (DEMO MODE)"
+    }
+
+# Helper function to hash passwords
+def hash_password(password: str) -> str:
+    """Simple password hashing for demo purposes"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Auth endpoints
+@app.post("/auth/signup")
+async def signup(request: SignupRequest):
+    """User signup endpoint"""
+    # Check if user already exists
+    if request.email in MOCK_USERS:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Create new user
+    user_id = secrets.token_hex(16)
+    MOCK_USERS[request.email] = {
+        "id": user_id,
+        "email": request.email,
+        "name": request.name,
+        "password_hash": hash_password(request.password),
+        "created_at": datetime.now().isoformat()
+    }
+
+    # Generate auth token
+    token = secrets.token_urlsafe(32)
+
+    return {
+        "token": token,
+        "user": {
+            "id": user_id,
+            "email": request.email,
+            "name": request.name
+        },
+        "message": "Account created successfully"
+    }
+
+@app.post("/auth/login")
+async def login(request: LoginRequest):
+    """User login endpoint"""
+    # Check if user exists
+    if request.email not in MOCK_USERS:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    user = MOCK_USERS[request.email]
+
+    # Verify password
+    if hash_password(request.password) != user["password_hash"]:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Generate auth token
+    token = secrets.token_urlsafe(32)
+
+    return {
+        "token": token,
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"]
+        },
+        "message": "Login successful"
     }
 
 if __name__ == "__main__":
