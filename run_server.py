@@ -11,6 +11,24 @@ from pydantic import BaseModel
 import secrets
 import hashlib
 import random
+import os
+import sys
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Add services directory to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import Massive API client
+try:
+    from services.massive_api import get_massive_client, close_massive_client
+    MASSIVE_AVAILABLE = True
+except ImportError:
+    MASSIVE_AVAILABLE = False
+    logger.warning("Massive API client not available. Using mock data.")
 
 # Create FastAPI app
 app = FastAPI(title="Futures AI Trader", version="1.0.0")
@@ -93,10 +111,137 @@ def generate_price_movement(ticker: str, base_price: float = None) -> dict:
     }
 
 
-# Shared function for daily movements
+# Cache for market data (refresh every 60 seconds)
+_market_data_cache = {
+    "data": None,
+    "timestamp": None,
+    "cache_duration": 60  # seconds
+}
+
+
 async def _get_daily_movements():
-    """Shared logic for daily movements"""
-    # Generate jumps (biggest increases)
+    """Get daily price movements from Massive API or fallback to mock data"""
+    # Check cache
+    if _market_data_cache["data"] and _market_data_cache["timestamp"]:
+        cache_age = (datetime.now() - _market_data_cache["timestamp"]).total_seconds()
+        if cache_age < _market_data_cache["cache_duration"]:
+            return _market_data_cache["data"]
+    
+    # Try to get real data from Massive API
+    if MASSIVE_AVAILABLE:
+        try:
+            logger.info("Attempting to fetch real market data from Massive API...")
+            client = get_massive_client()
+            from datetime import timedelta
+            
+            # Try today first, then yesterday (free tier may not have today's data until EOD)
+            today = datetime.now().strftime("%Y-%m-%d")
+            yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+            
+            grouped_data = None
+            date_used = None
+            
+            # Try today first
+            try:
+                logger.info(f"Fetching grouped daily data for {today}...")
+                grouped_data = await client.get_grouped_daily(today)
+                status = grouped_data.get('status', 'unknown')
+                logger.info(f"Received API response for {today} with status: {status}")
+                
+                # Check if we got a 403 (not authorized - free tier limitation)
+                if status == 'NOT_AUTHORIZED' or 'message' in grouped_data:
+                    if 'today' in grouped_data.get('message', '').lower():
+                        logger.info(f"Today's data not available (free tier limitation), trying yesterday...")
+                        grouped_data = None
+                
+            except Exception as e:
+                logger.warning(f"Error fetching today's data: {e}, trying yesterday...")
+                grouped_data = None
+            
+            # If today failed, try yesterday
+            if not grouped_data or grouped_data.get('status') != 'OK':
+                try:
+                    logger.info(f"Fetching grouped daily data for {yesterday}...")
+                    grouped_data = await client.get_grouped_daily(yesterday)
+                    date_used = yesterday
+                    logger.info(f"Received API response for {yesterday} with status: {grouped_data.get('status', 'unknown')}")
+                except Exception as e:
+                    logger.error(f"Error fetching yesterday's data: {e}")
+                    raise
+            else:
+                date_used = today
+            
+            if grouped_data.get('status') != 'OK':
+                logger.warning(f"API returned non-OK status: {grouped_data.get('status')}")
+                raise Exception(f"API returned status: {grouped_data.get('status')}")
+            
+            if "results" in grouped_data and len(grouped_data["results"]) > 0:
+                results = grouped_data["results"]
+                
+                # Process results into our format
+                movements = []
+                for result in results:
+                    ticker = result.get("T", "")  # Ticker symbol
+                    close_price = result.get("c", 0)  # Close price
+                    open_price = result.get("o", 0)  # Open price
+                    volume = result.get("v", 0)  # Volume
+                    high = result.get("h", close_price)  # High
+                    low = result.get("l", close_price)  # Low
+                    
+                    # Filter out special securities (warrants, rights, units, etc.)
+                    ticker_upper = ticker.upper()
+                    # Skip if contains special suffixes or ends with W/R/U (warrants/rights/units)
+                    if ('.' in ticker and any(ticker_upper.endswith(s) for s in ['.WS', '.W', '.R', '.U', '.RT'])) or \
+                       (len(ticker) > 4 and ticker_upper[-1] in ['W', 'R', 'U']):
+                        continue
+                    
+                    # Filter for quality stocks: reasonable price range and decent volume
+                    # Minimum $1 price, maximum $10,000, minimum 10k volume
+                    if close_price < 1.0 or close_price > 10000 or volume < 10000:
+                        continue
+                    
+                    if close_price > 0 and open_price > 0:
+                        change = close_price - open_price
+                        change_pct = (change / open_price) * 100
+                        
+                        movements.append({
+                            "ticker": ticker,
+                            "previous_close": open_price,
+                            "current_price": close_price,
+                            "change": round(change, 2),
+                            "change_pct": round(change_pct, 2),
+                            "volume": int(volume),
+                        })
+                
+                # Sort and separate gainers/losers
+                movements.sort(key=lambda x: x["change_pct"], reverse=True)
+                
+                jumps = [m for m in movements if m["change_pct"] > 0][:10]
+                dips = [m for m in movements if m["change_pct"] < 0][:10]
+                # Sort dips by most negative first
+                dips.sort(key=lambda x: x["change_pct"])
+                
+                result_data = {
+                    "jumps": jumps,
+                    "dips": dips,
+                    "timestamp": datetime.now().isoformat(),
+                }
+                
+                # Cache the result
+                _market_data_cache["data"] = result_data
+                _market_data_cache["timestamp"] = datetime.now()
+                
+                logger.info(f"✅ Successfully fetched {len(jumps)} gainers and {len(dips)} losers from Massive API (date: {date_used})")
+                return result_data
+                
+        except Exception as e:
+            logger.error(f"Error fetching data from Massive API: {e}")
+            logger.exception("Full error details:")
+            # Fall through to mock data
+    
+    # Fallback to mock data
+    logger.warning("⚠️  Using MOCK data (Massive API unavailable or failed)")
+    logger.warning(f"   MASSIVE_AVAILABLE={MASSIVE_AVAILABLE}, API_KEY_SET={bool(os.getenv('MASSIVE_API_KEY'))}")
     jumps = []
     for ticker in MOCK_TICKERS[:12]:  # Top 12 gainers
         movement = generate_price_movement(ticker, base_price=random.uniform(20, 200))
@@ -131,9 +276,119 @@ async def _get_daily_movements():
     }
 
 
-# Shared function for big movers
 async def _get_big_movers():
-    """Shared logic for big movers"""
+    """Get big movers from Massive API or fallback to mock data"""
+    # Try to get real data from Massive API
+    if MASSIVE_AVAILABLE:
+        try:
+            logger.info("Fetching big movers from Massive API...")
+            client = get_massive_client()
+            from datetime import timedelta
+            movers = []
+            
+            # Use yesterday's date (free tier limitation) 
+            yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+            
+            # Get grouped daily data (single API call for all stocks)
+            try:
+                grouped_data = await client.get_grouped_daily(yesterday)
+                
+                if grouped_data.get('status') == 'OK' and 'results' in grouped_data:
+                    # Create a map of ticker to data
+                    ticker_data_map = {}
+                    for result in grouped_data['results']:
+                        ticker = result.get('T', '')
+                        if ticker:
+                            ticker_data_map[ticker] = result
+                    
+                    # Now fetch data for well-known companies from the grouped data
+                    # Only make individual API calls if we need previous close
+                    for company in WELL_KNOWN_COMPANIES:
+                        ticker = company["ticker"]
+                        
+                        if ticker in ticker_data_map:
+                            # Found in grouped data - use it (more efficient)
+                            result = ticker_data_map[ticker]
+                            current_price = result.get("c", 0)  # Close
+                            open_price = result.get("o", 0)  # Open
+                            volume = result.get("v", 0)  # Volume
+                            
+                            if current_price > 0 and open_price > 0:
+                                # Calculate change from open to close (intraday change)
+                                change = current_price - open_price
+                                change_pct = (change / open_price) * 100
+                                
+                                movers.append({
+                                    "ticker": ticker,
+                                    "name": company["name"],
+                                    "previous_close": round(open_price, 2),
+                                    "current_price": round(current_price, 2),
+                                    "change": round(change, 2),
+                                    "change_pct": round(change_pct, 2),
+                                    "volume": int(volume),
+                                })
+                        else:
+                            # Not in grouped data, try previous close (single call per ticker)
+                            try:
+                                prev_close_data = await client.get_prev_close(ticker)
+                                if "results" in prev_close_data and len(prev_close_data["results"]) > 0:
+                                    prev_result = prev_close_data["results"][0]
+                                    current_price = prev_result.get("c", 0)
+                                    previous_close = prev_result.get("o", prev_result.get("c", 0))
+                                    volume = prev_result.get("v", 0)
+                                    
+                                    if current_price > 0:
+                                        change = current_price - previous_close
+                                        change_pct = (change / previous_close) * 100 if previous_close > 0 else 0
+                                        
+                                        movers.append({
+                                            "ticker": ticker,
+                                            "name": company["name"],
+                                            "previous_close": round(previous_close, 2),
+                                            "current_price": round(current_price, 2),
+                                            "change": round(change, 2),
+                                            "change_pct": round(change_pct, 2),
+                                            "volume": int(volume),
+                                        })
+                                
+                                # Small delay to avoid rate limits
+                                import asyncio
+                                await asyncio.sleep(0.1)
+                                
+                            except Exception as e:
+                                logger.debug(f"Error fetching data for {ticker}: {e}")
+                                continue
+                                
+            except Exception as e:
+                logger.warning(f"Error fetching grouped data for big movers: {e}")
+                # Fall through to individual calls or mock data
+            
+            if movers:
+                # Sort by absolute percentage change (descending)
+                movers.sort(key=lambda x: abs(x["change_pct"]), reverse=True)
+                
+                # Filter to only show significant moves (abs change >= 1.0%)
+                significant_movers = [m for m in movers if abs(m["change_pct"]) >= 1.0]
+                
+                # If we don't have enough significant movers, include all movers
+                if len(significant_movers) < 5:
+                    significant_movers = movers
+                
+                logger.info(f"✅ Successfully fetched {len(significant_movers)} big movers from Massive API")
+                return {
+                    "movers": significant_movers[:15],  # Top 15 movers
+                    "timestamp": datetime.now().isoformat(),
+                }
+            else:
+                logger.warning("No movers found in API response")
+                raise Exception("No movers data returned from API")
+            
+        except Exception as e:
+            logger.error(f"Error fetching big movers from Massive API: {e}")
+            # Fall through to mock data
+    
+    # Fallback to mock data
+    logger.info("Using mock data for big movers (Massive API unavailable or failed)")
     movers = []
     
     for company in WELL_KNOWN_COMPANIES:
@@ -405,6 +660,17 @@ async def api_logout():
 app.include_router(api_router)
 
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on server shutdown"""
+    if MASSIVE_AVAILABLE:
+        try:
+            await close_massive_client()
+            logger.info("Massive API client closed")
+        except Exception as e:
+            logger.error(f"Error closing Massive API client: {e}")
+
+
 if __name__ == "__main__":
     print("=" * 70)
     print("🚀 Futures AI Trader - Backend Server")
@@ -413,7 +679,18 @@ if __name__ == "__main__":
     print(f"📊 API Documentation: http://localhost:8000/docs")
     print(f"❤️  Health Check: http://localhost:8000/health")
     print(f"\n🎨 Frontend should be running on http://localhost:3000")
-    print(f"\n⚠️  NOTE: This is a DEMO server with mock data")
+    
+    if MASSIVE_AVAILABLE:
+        api_key_set = bool(os.getenv("MASSIVE_API_KEY"))
+        if api_key_set:
+            print(f"\n✅ Massive.com API integration: ENABLED")
+        else:
+            print(f"\n⚠️  Massive.com API integration: AVAILABLE but MASSIVE_API_KEY not set")
+            print(f"   Set MASSIVE_API_KEY environment variable to use real market data")
+    else:
+        print(f"\n⚠️  Massive.com API integration: UNAVAILABLE (using mock data)")
+        print(f"   Install aiohttp: pip install aiohttp")
+    
     print("=" * 70)
     print()
 
