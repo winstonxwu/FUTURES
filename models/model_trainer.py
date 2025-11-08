@@ -10,10 +10,10 @@ from .ensemble import EnsembleScorer
 from .model_trainer import ModelTrainer
 
 __all__ = [
-    'PUpModel',
-    'PDropModel',
-    'DExtModel',
-    'RVolModel',
-    'EnsembleScorer',
-    'ModelTrainer'
+    "PUpModel",
+    "PDropModel",
+    "DExtModel",
+    "RVolModel",
+    "EnsembleScorer",
+    "ModelTrainer",
 ]
