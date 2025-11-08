@@ -1,0 +1,2 @@
+[console_scripts]
+valuecell-trader = valuecell_trader.cli:cli
