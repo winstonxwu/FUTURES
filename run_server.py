@@ -14,6 +14,7 @@ import random
 import os
 import sys
 import logging
+import yfinance as yf
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +62,15 @@ MOCK_CAPITAL = 1000.0
 
 # Mock user database (in-memory for demo)
 MOCK_USERS = {}
+
+# Global Portfolio State (tracks all holdings and available capital)
+GLOBAL_PORTFOLIO = {
+    "starting_balance": 10000.00,
+    "available_cash": 10000.00,
+    "holdings": {},  # {ticker: {"shares": X, "avg_price": Y, "strategy": "secure/moderate/aggressive"}}
+    "trade_history": [],
+    "decision_history": {}  # {strategy: [{ticker, action, shares, price, timestamp, recommendation}, ...]}
+}
 
 # Well-known companies for the "Big Daily Price Jumps" section
 WELL_KNOWN_COMPANIES = [
@@ -317,41 +327,107 @@ async def _get_daily_movements():
             logger.exception("Full error details:")
             # Fall through to mock data
     
-    # Fallback to mock data
-    logger.warning("⚠️  Using MOCK data (Massive API unavailable or failed)")
+    # Fallback to real data using yfinance
+    logger.warning("⚠️  Massive API unavailable or failed, fetching real data using yfinance")
     logger.warning(f"   MASSIVE_AVAILABLE={MASSIVE_AVAILABLE}, API_KEY_SET={bool(os.getenv('MASSIVE_API_KEY'))}")
-    jumps = []
-    for ticker in MOCK_TICKERS[:12]:  # Top 12 gainers
-        movement = generate_price_movement(ticker, base_price=random.uniform(20, 200))
-        # Ensure it's positive
-        if movement["change_pct"] < 0:
-            movement["change_pct"] = abs(movement["change_pct"])
-            movement["current_price"] = movement["previous_close"] * (1 + movement["change_pct"] / 100)
-            movement["change"] = movement["current_price"] - movement["previous_close"]
-        jumps.append(movement)
-    
-    # Sort by percentage change (descending)
-    jumps.sort(key=lambda x: x["change_pct"], reverse=True)
-    
-    # Generate dips (biggest decreases)
-    dips = []
-    for ticker in MOCK_TICKERS[12:24]:  # Top 12 losers
-        movement = generate_price_movement(ticker, base_price=random.uniform(20, 200))
-        # Ensure it's negative
-        if movement["change_pct"] > 0:
-            movement["change_pct"] = -movement["change_pct"]
-            movement["current_price"] = movement["previous_close"] * (1 + movement["change_pct"] / 100)
-            movement["change"] = movement["current_price"] - movement["previous_close"]
-        dips.append(movement)
-    
-    # Sort by percentage change (ascending, most negative first)
-    dips.sort(key=lambda x: x["change_pct"])
-    
-    return {
-        "jumps": jumps[:10],  # Top 10 gainers
-        "dips": dips[:10],    # Top 10 losers
-        "timestamp": datetime.now().isoformat(),
-    }
+
+    try:
+        # Popular tickers to check for price movements
+        popular_tickers = [
+            "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "AMD",
+            "NFLX", "ADBE", "CRM", "ORCL", "INTC", "CSCO", "IBM", "QCOM",
+            "V", "MA", "JPM", "BAC", "WMT", "HD", "DIS", "NKE", "MCD",
+            "PFE", "JNJ", "UNH", "CVX", "XOM", "BA", "GE", "F", "GM"
+        ]
+
+        # Fetch real-time data for all tickers
+        logger.info("Fetching real stock data from Yahoo Finance...")
+        ticker_data = yf.download(popular_tickers, period="5d", progress=False)
+
+        movements = []
+        if not ticker_data.empty and 'Close' in ticker_data:
+            for ticker in popular_tickers:
+                try:
+                    # Get the last 2 days of close prices
+                    if len(popular_tickers) > 1:
+                        close_prices = ticker_data['Close'][ticker].dropna()
+                    else:
+                        close_prices = ticker_data['Close'].dropna()
+
+                    if len(close_prices) >= 2:
+                        current_price = float(close_prices.iloc[-1])
+                        previous_close = float(close_prices.iloc[-2])
+
+                        if previous_close > 0:
+                            change = current_price - previous_close
+                            change_pct = (change / previous_close) * 100
+
+                            movements.append({
+                                "ticker": ticker,
+                                "previous_close": round(previous_close, 2),
+                                "current_price": round(current_price, 2),
+                                "change": round(change, 2),
+                                "change_pct": round(change_pct, 2),
+                                "volume": 0  # Volume not easily accessible in this format
+                            })
+                except Exception as e:
+                    logger.debug(f"Could not process {ticker}: {e}")
+                    continue
+
+        # Sort into jumps (positive changes) and dips (negative changes)
+        jumps = [m for m in movements if m["change_pct"] > 0]
+        dips = [m for m in movements if m["change_pct"] < 0]
+
+        # Sort jumps by percentage (descending - highest gains first)
+        jumps.sort(key=lambda x: x["change_pct"], reverse=True)
+
+        # Sort dips by percentage (ascending - biggest losses first)
+        dips.sort(key=lambda x: x["change_pct"])
+
+        logger.info(f"✅ Fetched real data: {len(jumps)} gainers, {len(dips)} losers from Yahoo Finance")
+
+        return {
+            "jumps": jumps[:10],  # Top 10 gainers
+            "dips": dips[:10],    # Top 10 losers
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    except Exception as e:
+        logger.error(f"Error fetching yfinance data: {e}")
+        # Last resort: minimal mock data
+        logger.warning("Falling back to minimal mock data")
+        jumps = []
+        for ticker in MOCK_TICKERS[:12]:  # Top 12 gainers
+            movement = generate_price_movement(ticker, base_price=random.uniform(20, 200))
+            # Ensure it's positive
+            if movement["change_pct"] < 0:
+                movement["change_pct"] = abs(movement["change_pct"])
+                movement["current_price"] = movement["previous_close"] * (1 + movement["change_pct"] / 100)
+                movement["change"] = movement["current_price"] - movement["previous_close"]
+            jumps.append(movement)
+
+        # Sort by percentage change (descending)
+        jumps.sort(key=lambda x: x["change_pct"], reverse=True)
+
+        # Generate dips (biggest decreases)
+        dips = []
+        for ticker in MOCK_TICKERS[12:24]:  # Top 12 losers
+            movement = generate_price_movement(ticker, base_price=random.uniform(20, 200))
+            # Ensure it's negative
+            if movement["change_pct"] > 0:
+                movement["change_pct"] = -movement["change_pct"]
+                movement["current_price"] = movement["previous_close"] * (1 + movement["change_pct"] / 100)
+                movement["change"] = movement["current_price"] - movement["previous_close"]
+            dips.append(movement)
+
+        # Sort by percentage change (ascending, most negative first)
+        dips.sort(key=lambda x: x["change_pct"])
+
+        return {
+            "jumps": jumps[:10],  # Top 10 gainers
+            "dips": dips[:10],    # Top 10 losers
+            "timestamp": datetime.now().isoformat(),
+        }
 
 
 async def _get_big_movers():
@@ -465,51 +541,105 @@ async def _get_big_movers():
             logger.error(f"Error fetching big movers from Massive API: {e}")
             # Fall through to mock data
     
-    # Fallback to mock data
-    logger.info("Using mock data for big movers (Massive API unavailable or failed)")
-    movers = []
-    
-    for company in WELL_KNOWN_COMPANIES:
-        # Use realistic base prices for well-known companies
-        base_prices = {
-            "AAPL": 175.0,
-            "MSFT": 380.0,
-            "GOOGL": 140.0,
-            "AMZN": 150.0,
-            "NVDA": 450.0,
-            "META": 350.0,
-            "TSLA": 250.0,
-            "NFLX": 450.0,
-            "AMD": 120.0,
-            "INTC": 45.0,
-            "JPM": 150.0,
-            "BAC": 35.0,
-            "WMT": 160.0,
-            "V": 250.0,
-            "JNJ": 150.0,
+    # Fallback to real data using yfinance
+    logger.info("Fetching real big movers data using yfinance (Massive API unavailable)")
+
+    try:
+        # Get tickers from well-known companies
+        tickers = [company["ticker"] for company in WELL_KNOWN_COMPANIES]
+        ticker_names = {company["ticker"]: company["name"] for company in WELL_KNOWN_COMPANIES}
+
+        # Fetch real-time data
+        ticker_data = yf.download(tickers, period="5d", progress=False)
+
+        movers = []
+        if not ticker_data.empty and 'Close' in ticker_data:
+            for ticker in tickers:
+                try:
+                    # Get the last 2 days of close prices
+                    if len(tickers) > 1:
+                        close_prices = ticker_data['Close'][ticker].dropna()
+                    else:
+                        close_prices = ticker_data['Close'].dropna()
+
+                    if len(close_prices) >= 2:
+                        current_price = float(close_prices.iloc[-1])
+                        previous_close = float(close_prices.iloc[-2])
+
+                        if previous_close > 0:
+                            change = current_price - previous_close
+                            change_pct = (change / previous_close) * 100
+
+                            movers.append({
+                                "ticker": ticker,
+                                "name": ticker_names.get(ticker, ticker),
+                                "previous_close": round(previous_close, 2),
+                                "current_price": round(current_price, 2),
+                                "change": round(change, 2),
+                                "change_pct": round(change_pct, 2),
+                                "volume": 0  # Volume not easily accessible
+                            })
+                except Exception as e:
+                    logger.debug(f"Could not process {ticker}: {e}")
+                    continue
+
+        # Sort by absolute percentage change (descending)
+        movers.sort(key=lambda x: abs(x["change_pct"]), reverse=True)
+
+        logger.info(f"✅ Fetched {len(movers)} real big movers from Yahoo Finance")
+
+        return {
+            "movers": movers[:15],  # Top 15 movers
+            "timestamp": datetime.now().isoformat(),
         }
-        
-        base_price = base_prices.get(company["ticker"], random.uniform(50, 300))
-        movement = generate_price_movement(company["ticker"], base_price=base_price)
-        
-        # Add company name
-        movement["name"] = company["name"]
-        movers.append(movement)
-    
-    # Sort by absolute percentage change (descending)
-    movers.sort(key=lambda x: abs(x["change_pct"]), reverse=True)
-    
-    # Filter to only show significant moves (abs change >= 1.5%) for final result
-    significant_movers = [m for m in movers if abs(m["change_pct"]) >= 1.5]
-    
-    # If we don't have enough significant movers, include all movers
-    if len(significant_movers) < 5:
-        significant_movers = movers
-    
-    return {
-        "movers": significant_movers[:15],  # Top 15 movers
-        "timestamp": datetime.now().isoformat(),
-    }
+
+    except Exception as e:
+        logger.error(f"Error fetching yfinance data for big movers: {e}")
+        # Last resort: mock data
+        logger.info("Falling back to mock data for big movers")
+        movers = []
+
+        for company in WELL_KNOWN_COMPANIES:
+            # Use realistic base prices for well-known companies
+            base_prices = {
+                "AAPL": 175.0,
+                "MSFT": 380.0,
+                "GOOGL": 140.0,
+                "AMZN": 150.0,
+                "NVDA": 450.0,
+                "META": 350.0,
+                "TSLA": 250.0,
+                "NFLX": 450.0,
+                "AMD": 120.0,
+                "INTC": 45.0,
+                "JPM": 150.0,
+                "BAC": 35.0,
+                "WMT": 160.0,
+                "V": 250.0,
+                "JNJ": 150.0,
+            }
+
+            base_price = base_prices.get(company["ticker"], random.uniform(50, 300))
+            movement = generate_price_movement(company["ticker"], base_price=base_price)
+
+            # Add company name
+            movement["name"] = company["name"]
+            movers.append(movement)
+
+        # Sort by absolute percentage change (descending)
+        movers.sort(key=lambda x: abs(x["change_pct"]), reverse=True)
+
+        # Filter to only show significant moves (abs change >= 1.5%) for final result
+        significant_movers = [m for m in movers if abs(m["change_pct"]) >= 1.5]
+
+        # If we don't have enough significant movers, include all movers
+        if len(significant_movers) < 5:
+            significant_movers = movers
+
+        return {
+            "movers": significant_movers[:15],  # Top 15 movers
+            "timestamp": datetime.now().isoformat(),
+        }
 
 
 @app.get("/market/daily-movements")
@@ -1012,6 +1142,526 @@ async def api_logout():
 
 # Include the API router
 app.include_router(api_router)
+
+
+# Portfolio management endpoint
+@app.get("/api/portfolio/{strategy}")
+async def get_portfolio(strategy: str):
+    """
+    Get portfolio for a specific strategy with virtual money
+
+    Args:
+        strategy: One of 'secure', 'moderate', or 'aggressive'
+    """
+    strategy = strategy.lower()
+
+    # Virtual money settings
+    virtual_balance = 10000.00  # Starting with $10,000
+
+    # Strategy-specific stock portfolios
+    if strategy == "secure":
+        portfolio_stocks = [
+            {"ticker": "JNJ", "shares": 15, "avg_price": 155.50},
+            {"ticker": "PG", "shares": 12, "avg_price": 145.30},
+            {"ticker": "KO", "shares": 25, "avg_price": 58.20},
+            {"ticker": "WMT", "shares": 10, "avg_price": 165.40},
+            {"ticker": "VZ", "shares": 20, "avg_price": 38.75},
+        ]
+    elif strategy == "aggressive":
+        portfolio_stocks = [
+            {"ticker": "NVDA", "shares": 5, "avg_price": 485.30},
+            {"ticker": "TSLA", "shares": 8, "avg_price": 242.50},
+            {"ticker": "AMD", "shares": 15, "avg_price": 128.60},
+            {"ticker": "PLTR", "shares": 30, "avg_price": 28.40},
+            {"ticker": "COIN", "shares": 12, "avg_price": 195.80},
+        ]
+    else:  # moderate
+        portfolio_stocks = [
+            {"ticker": "AAPL", "shares": 10, "avg_price": 178.50},
+            {"ticker": "MSFT", "shares": 8, "avg_price": 380.25},
+            {"ticker": "V", "shares": 7, "avg_price": 258.30},
+            {"ticker": "JPM", "shares": 12, "avg_price": 155.60},
+            {"ticker": "DIS", "shares": 15, "avg_price": 92.40},
+        ]
+
+    # Fetch current prices using yfinance
+    tickers = [stock["ticker"] for stock in portfolio_stocks]
+    try:
+        # Fetch real-time data for all tickers at once
+        ticker_data = yf.download(tickers, period="1d", progress=False)
+        current_prices = {}
+
+        if len(tickers) == 1:
+            # Single ticker returns different structure
+            ticker = tickers[0]
+            if not ticker_data.empty and 'Close' in ticker_data:
+                current_prices[ticker] = float(ticker_data['Close'].iloc[-1])
+        else:
+            # Multiple tickers
+            if not ticker_data.empty and 'Close' in ticker_data:
+                for ticker in tickers:
+                    try:
+                        current_prices[ticker] = float(ticker_data['Close'][ticker].iloc[-1])
+                    except (KeyError, IndexError):
+                        logger.warning(f"Could not get current price for {ticker}, using average price")
+    except Exception as e:
+        logger.error(f"Error fetching stock prices with yfinance: {e}")
+        current_prices = {}
+
+    # Calculate current prices and recommendations
+    portfolio = []
+    for stock in portfolio_stocks:
+        # Use real current price if available, otherwise simulate
+        if stock["ticker"] in current_prices:
+            current_price = current_prices[stock["ticker"]]
+        else:
+            # Fallback: simulate current price (±10% from average)
+            price_change_pct = random.uniform(-10, 10)
+            current_price = stock["avg_price"] * (1 + price_change_pct / 100)
+
+        # Calculate P&L
+        total_value = current_price * stock["shares"]
+        total_cost = stock["avg_price"] * stock["shares"]
+        pnl = total_value - total_cost
+        pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
+
+        # Generate AI recommendation based on performance and strategy
+        if pnl_pct > 5:
+            if strategy == "secure":
+                recommendation = random.choice(["HOLD", "TAKE PROFIT"])
+            elif strategy == "aggressive":
+                recommendation = random.choice(["HOLD", "BUY MORE"])
+            else:
+                recommendation = random.choice(["HOLD", "TAKE PROFIT"])
+        elif pnl_pct < -5:
+            if strategy == "secure":
+                recommendation = random.choice(["SELL", "HOLD"])
+            elif strategy == "aggressive":
+                recommendation = random.choice(["BUY THE DIP", "HOLD"])
+            else:
+                recommendation = random.choice(["HOLD", "SELL"])
+        else:
+            recommendation = "HOLD"
+
+        # Generate reasoning
+        if recommendation == "BUY" or recommendation == "BUY MORE" or recommendation == "BUY THE DIP":
+            reasoning_templates = [
+                f"Strong momentum and {abs(pnl_pct):.1f}% {'gain' if pnl_pct > 0 else 'discount'}. Good entry point.",
+                f"Technical indicators suggest upward trend. Current position shows {pnl_pct:.1f}% return.",
+                f"Market conditions favorable. Consider adding to position at current levels.",
+            ]
+        elif recommendation == "SELL" or recommendation == "TAKE PROFIT":
+            reasoning_templates = [
+                f"Secure profits at {pnl_pct:.1f}% gain. Consider rebalancing portfolio.",
+                f"Position showing {abs(pnl_pct):.1f}% {'profit' if pnl_pct > 0 else 'loss'}. Risk management suggests exit.",
+                f"Technical resistance at current levels. Good time to lock in gains.",
+            ]
+        else:  # HOLD
+            reasoning_templates = [
+                f"Current position stable at {pnl_pct:.1f}% return. Maintain holdings.",
+                f"No significant catalyst for change. Continue monitoring position.",
+                f"Fair value range. Hold current position and reassess next quarter.",
+            ]
+
+        confidence = random.uniform(0.70, 0.95)
+
+        portfolio.append({
+            "ticker": stock["ticker"],
+            "shares": stock["shares"],
+            "avg_price": round(stock["avg_price"], 2),
+            "current_price": round(current_price, 2),
+            "total_value": round(total_value, 2),
+            "pnl": round(pnl, 2),
+            "pnl_pct": round(pnl_pct, 2),
+            "recommendation": recommendation,
+            "confidence": round(confidence, 2),
+            "reasoning": random.choice(reasoning_templates)
+        })
+
+    # Calculate portfolio totals
+    total_value = sum(s["total_value"] for s in portfolio)
+    total_pnl = sum(s["pnl"] for s in portfolio)
+    total_cost = sum(s["avg_price"] * s["shares"] for s in portfolio)
+
+    # Calculate available cash
+    available_cash = virtual_balance - total_cost
+
+    return {
+        "strategy": strategy,
+        "virtual_balance": virtual_balance,
+        "available_cash": round(available_cash, 2),
+        "portfolio": portfolio,
+        "total_value": round(total_value, 2),
+        "total_pnl": round(total_pnl, 2),
+        "total_pnl_pct": round((total_pnl / total_cost) * 100, 2) if total_cost > 0 else 0,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+# Unified Portfolio endpoints
+@app.get("/api/portfolio")
+async def get_unified_portfolio():
+    """
+    Get unified portfolio across all strategies
+    Shows all current holdings and available capital
+    """
+    # Fetch current prices for all holdings
+    holdings_with_prices = []
+    total_portfolio_value = 0
+
+    if GLOBAL_PORTFOLIO["holdings"]:
+        tickers = list(GLOBAL_PORTFOLIO["holdings"].keys())
+
+        try:
+            # Fetch current prices
+            ticker_data = yf.download(tickers, period="1d", progress=False)
+            current_prices = {}
+
+            if len(tickers) == 1:
+                ticker = tickers[0]
+                if not ticker_data.empty and 'Close' in ticker_data:
+                    current_prices[ticker] = float(ticker_data['Close'].iloc[-1])
+            else:
+                if not ticker_data.empty and 'Close' in ticker_data:
+                    for ticker in tickers:
+                        try:
+                            current_prices[ticker] = float(ticker_data['Close'][ticker].iloc[-1])
+                        except (KeyError, IndexError):
+                            pass
+        except Exception as e:
+            logger.error(f"Error fetching prices for unified portfolio: {e}")
+            current_prices = {}
+
+        # Build holdings list with current prices
+        for ticker, holding in GLOBAL_PORTFOLIO["holdings"].items():
+            current_price = current_prices.get(ticker, holding["avg_price"])
+            total_value = current_price * holding["shares"]
+            total_cost = holding["avg_price"] * holding["shares"]
+            pnl = total_value - total_cost
+            pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
+
+            total_portfolio_value += total_value
+
+            holdings_with_prices.append({
+                "ticker": ticker,
+                "shares": holding["shares"],
+                "avg_price": round(holding["avg_price"], 2),
+                "current_price": round(current_price, 2),
+                "total_value": round(total_value, 2),
+                "pnl": round(pnl, 2),
+                "pnl_pct": round(pnl_pct, 2),
+                "strategy": holding.get("strategy", "unknown")
+            })
+
+    total_account_value = GLOBAL_PORTFOLIO["available_cash"] + total_portfolio_value
+    total_pnl = total_account_value - GLOBAL_PORTFOLIO["starting_balance"]
+    total_pnl_pct = (total_pnl / GLOBAL_PORTFOLIO["starting_balance"]) * 100 if GLOBAL_PORTFOLIO["starting_balance"] > 0 else 0
+
+    return {
+        "starting_balance": GLOBAL_PORTFOLIO["starting_balance"],
+        "available_cash": round(GLOBAL_PORTFOLIO["available_cash"], 2),
+        "portfolio_value": round(total_portfolio_value, 2),
+        "total_account_value": round(total_account_value, 2),
+        "total_pnl": round(total_pnl, 2),
+        "total_pnl_pct": round(total_pnl_pct, 2),
+        "holdings": holdings_with_prices,
+        "trade_count": len(GLOBAL_PORTFOLIO["trade_history"]),
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+class TradeRequest(BaseModel):
+    ticker: str
+    action: str  # "BUY" or "SELL"
+    shares: int
+    strategy: str  # "secure", "moderate", or "aggressive"
+
+
+@app.post("/api/portfolio/trade")
+async def execute_trade(trade: TradeRequest):
+    """
+    Execute a trade (buy or sell) and update the global portfolio
+    """
+    ticker = trade.ticker.upper()
+    action = trade.action.upper()
+    shares = trade.shares
+    strategy = trade.strategy.lower()
+
+    if action not in ["BUY", "SELL"]:
+        raise HTTPException(status_code=400, detail="Action must be BUY or SELL")
+
+    if shares <= 0:
+        raise HTTPException(status_code=400, detail="Shares must be positive")
+
+    # Fetch current price
+    try:
+        ticker_data = yf.download(ticker, period="1d", progress=False)
+        if ticker_data.empty or 'Close' not in ticker_data:
+            raise HTTPException(status_code=400, detail=f"Could not fetch price for {ticker}")
+
+        current_price = float(ticker_data['Close'].iloc[-1])
+    except Exception as e:
+        logger.error(f"Error fetching price for {ticker}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching price for {ticker}")
+
+    # Execute trade
+    if action == "BUY":
+        cost = current_price * shares
+
+        if cost > GLOBAL_PORTFOLIO["available_cash"]:
+            raise HTTPException(status_code=400, detail="Insufficient funds")
+
+        # Deduct cash
+        GLOBAL_PORTFOLIO["available_cash"] -= cost
+
+        # Add or update holding
+        if ticker in GLOBAL_PORTFOLIO["holdings"]:
+            # Update average price
+            existing = GLOBAL_PORTFOLIO["holdings"][ticker]
+            total_shares = existing["shares"] + shares
+            total_cost = (existing["avg_price"] * existing["shares"]) + cost
+            new_avg_price = total_cost / total_shares
+
+            GLOBAL_PORTFOLIO["holdings"][ticker] = {
+                "shares": total_shares,
+                "avg_price": new_avg_price,
+                "strategy": strategy
+            }
+        else:
+            GLOBAL_PORTFOLIO["holdings"][ticker] = {
+                "shares": shares,
+                "avg_price": current_price,
+                "strategy": strategy
+            }
+
+        # Record trade
+        GLOBAL_PORTFOLIO["trade_history"].append({
+            "ticker": ticker,
+            "action": "BUY",
+            "shares": shares,
+            "price": current_price,
+            "total": cost,
+            "strategy": strategy,
+            "timestamp": datetime.now().isoformat()
+        })
+
+        return {
+            "success": True,
+            "message": f"Bought {shares} shares of {ticker} at ${current_price:.2f}",
+            "cost": round(cost, 2),
+            "available_cash": round(GLOBAL_PORTFOLIO["available_cash"], 2)
+        }
+
+    elif action == "SELL":
+        # Check if we have the stock
+        if ticker not in GLOBAL_PORTFOLIO["holdings"]:
+            raise HTTPException(status_code=400, detail=f"You don't own any {ticker}")
+
+        holding = GLOBAL_PORTFOLIO["holdings"][ticker]
+
+        if shares > holding["shares"]:
+            raise HTTPException(status_code=400, detail=f"You only have {holding['shares']} shares of {ticker}")
+
+        # Calculate proceeds
+        proceeds = current_price * shares
+
+        # Add cash
+        GLOBAL_PORTFOLIO["available_cash"] += proceeds
+
+        # Update or remove holding
+        if shares == holding["shares"]:
+            # Sell all shares
+            del GLOBAL_PORTFOLIO["holdings"][ticker]
+        else:
+            # Sell partial shares
+            GLOBAL_PORTFOLIO["holdings"][ticker]["shares"] -= shares
+
+        # Record trade
+        GLOBAL_PORTFOLIO["trade_history"].append({
+            "ticker": ticker,
+            "action": "SELL",
+            "shares": shares,
+            "price": current_price,
+            "total": proceeds,
+            "strategy": strategy,
+            "timestamp": datetime.now().isoformat()
+        })
+
+        return {
+            "success": True,
+            "message": f"Sold {shares} shares of {ticker} at ${current_price:.2f}",
+            "proceeds": round(proceeds, 2),
+            "available_cash": round(GLOBAL_PORTFOLIO["available_cash"], 2)
+        }
+
+
+class DecisionRequest(BaseModel):
+    ticker: str
+    action: str  # "BUY", "SELL", or "HOLD"
+    shares: int = 0
+    strategy: str  # "secure", "moderate", or "aggressive"
+    recommendation: dict  # The full recommendation object from the AI
+
+
+@app.post("/api/portfolio/decision")
+async def record_decision(decision: DecisionRequest):
+    """
+    Record a user's decision (BUY, SELL, or HOLD) for tracking history
+    """
+    ticker = decision.ticker.upper()
+    action = decision.action.upper()
+    strategy = decision.strategy.lower()
+
+    if action not in ["BUY", "SELL", "HOLD"]:
+        raise HTTPException(status_code=400, detail="Action must be BUY, SELL, or HOLD")
+
+    # Fetch current price
+    try:
+        ticker_data = yf.download(ticker, period="1d", progress=False)
+        if ticker_data.empty or 'Close' not in ticker_data:
+            current_price = 0.0  # For HOLD, we might not need the exact price
+        else:
+            current_price = float(ticker_data['Close'].iloc[-1])
+    except Exception as e:
+        logger.error(f"Error fetching price for {ticker}: {e}")
+        current_price = 0.0
+
+    # Initialize strategy list if not exists
+    if strategy not in GLOBAL_PORTFOLIO["decision_history"]:
+        GLOBAL_PORTFOLIO["decision_history"][strategy] = []
+
+    # Record the decision
+    decision_record = {
+        "ticker": ticker,
+        "action": action,
+        "shares": decision.shares,
+        "price": current_price,
+        "timestamp": datetime.now().isoformat(),
+        "recommendation": decision.recommendation
+    }
+
+    GLOBAL_PORTFOLIO["decision_history"][strategy].append(decision_record)
+
+    return {
+        "success": True,
+        "message": f"Decision recorded: {action} {ticker}",
+        "decision": decision_record
+    }
+
+
+@app.get("/api/portfolio/decisions/{strategy}")
+async def get_decision_history(strategy: str):
+    """
+    Get decision history for a specific strategy
+    """
+    strategy = strategy.lower()
+
+    if strategy not in ["secure", "moderate", "aggressive"]:
+        raise HTTPException(status_code=400, detail="Invalid strategy")
+
+    return {
+        "strategy": strategy,
+        "decisions": GLOBAL_PORTFOLIO["decision_history"].get(strategy, [])
+    }
+
+
+# AI Stock Recommendations endpoint
+@app.get("/api/ai/recommendations")
+async def get_ai_recommendations(strategy: str = "moderate"):
+    """
+    Get AI-powered stock recommendations based on strategy
+
+    Args:
+        strategy: One of 'secure', 'moderate', or 'aggressive'
+    """
+    strategy = strategy.lower()
+
+    # Strategy-specific stock pools
+    if strategy == "secure":
+        # Conservative stocks - blue chips, stable companies
+        stock_pool = [
+            {"ticker": "JNJ", "name": "Johnson & Johnson", "sector": "Healthcare"},
+            {"ticker": "PG", "name": "Procter & Gamble", "sector": "Consumer Goods"},
+            {"ticker": "KO", "name": "Coca-Cola", "sector": "Beverages"},
+            {"ticker": "WMT", "name": "Walmart", "sector": "Retail"},
+            {"ticker": "VZ", "name": "Verizon", "sector": "Telecommunications"},
+        ]
+        risk_level = "Low"
+        description = "Focus on established companies with stable earnings and dividend payments"
+
+    elif strategy == "aggressive":
+        # High-growth stocks - tech, emerging sectors
+        stock_pool = [
+            {"ticker": "NVDA", "name": "NVIDIA Corporation", "sector": "Technology"},
+            {"ticker": "TSLA", "name": "Tesla Inc.", "sector": "Electric Vehicles"},
+            {"ticker": "AMD", "name": "Advanced Micro Devices", "sector": "Semiconductors"},
+            {"ticker": "PLTR", "name": "Palantir Technologies", "sector": "Software"},
+            {"ticker": "COIN", "name": "Coinbase Global", "sector": "Cryptocurrency"},
+        ]
+        risk_level = "High"
+        description = "Target high-growth companies in emerging sectors with significant upside potential"
+
+    else:  # moderate
+        # Balanced mix - mix of growth and value
+        stock_pool = [
+            {"ticker": "AAPL", "name": "Apple Inc.", "sector": "Technology"},
+            {"ticker": "MSFT", "name": "Microsoft Corporation", "sector": "Technology"},
+            {"ticker": "V", "name": "Visa Inc.", "sector": "Financial Services"},
+            {"ticker": "JPM", "name": "JPMorgan Chase", "sector": "Banking"},
+            {"ticker": "DIS", "name": "The Walt Disney Company", "sector": "Entertainment"},
+        ]
+        risk_level = "Moderate"
+        description = "Balance growth potential with risk management through diversification"
+
+    # Generate recommendations with AI-like reasoning
+    recommendations = []
+    for stock in stock_pool:
+        confidence = random.uniform(0.65, 0.95)
+
+        # Generate strategy-specific recommendations and reasoning
+        if strategy == "secure":
+            recommendation_type = random.choice(["BUY", "HOLD"])
+            reasoning_templates = [
+                f"{stock['name']} offers stable dividend yields and consistent earnings growth, making it ideal for conservative portfolios.",
+                f"Strong balance sheet and market leadership position in {stock['sector']} provide downside protection.",
+                f"Defensive characteristics and recession-resistant business model align with secure strategy objectives.",
+                f"Long track record of dividend payments and moderate price appreciation suitable for risk-averse investors.",
+            ]
+        elif strategy == "aggressive":
+            recommendation_type = random.choice(["STRONG BUY", "BUY"])
+            reasoning_templates = [
+                f"{stock['name']} shows exceptional growth potential in the {stock['sector']} sector with strong market momentum.",
+                f"High innovation rate and expanding market share position {stock['ticker']} for significant upside.",
+                f"Aggressive revenue growth and emerging market leadership justify higher risk tolerance.",
+                f"Technical indicators suggest strong bullish trend with potential for substantial capital appreciation.",
+            ]
+        else:  # moderate
+            recommendation_type = random.choice(["BUY", "HOLD", "STRONG BUY"])
+            reasoning_templates = [
+                f"{stock['name']} balances growth potential with established market position in {stock['sector']}.",
+                f"Solid fundamentals combined with reasonable valuation provide attractive risk-adjusted returns.",
+                f"Diversification benefits and steady growth trajectory align with moderate risk tolerance.",
+                f"Strong competitive moat and consistent performance make {stock['ticker']} a core holding candidate.",
+            ]
+
+        recommendations.append({
+            "ticker": stock["ticker"],
+            "name": stock["name"],
+            "recommendation": recommendation_type,
+            "confidence": round(confidence, 2),
+            "reasoning": random.choice(reasoning_templates),
+        })
+
+    # Sort by confidence (highest first)
+    recommendations.sort(key=lambda x: x["confidence"], reverse=True)
+
+    return {
+        "strategy": strategy,
+        "risk_level": risk_level,
+        "description": description,
+        "recommendations": recommendations[:5],  # Return top 5
+        "timestamp": datetime.now().isoformat(),
+    }
 
 
 @app.on_event("shutdown")

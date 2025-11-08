@@ -12,6 +12,12 @@ const Dither = dynamic(() => import('@/components/Dither'), {
   loading: () => null
 });
 
+// Dynamically import StrategyCards to avoid SSR issues with GSAP
+const StrategyCards = dynamic(() => import('@/components/StrategyCards'), {
+  ssr: false,
+  loading: () => null
+});
+
 export default function DashboardPage() {
   const { user, logout, isAuthenticated } = useAuth();
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -218,6 +224,24 @@ export default function DashboardPage() {
             trend={null}
             animate={animateNumbers}
           />
+        </div>
+
+        {/* AI Strategy Cards */}
+        <div className="mb-8 fade-in-up">
+          <div className="glass-card rounded-2xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  <span className="text-3xl">🤖</span>
+                  AI Investment Strategies
+                </h2>
+                <p className="text-sm text-[var(--foreground-secondary)] mt-2">
+                  Click a card to get AI-powered stock recommendations
+                </p>
+              </div>
+            </div>
+            <StrategyCards />
+          </div>
         </div>
 
         {/* Daily Price Jumps & Dips */}
@@ -444,7 +468,7 @@ function MetricCard({ title, value, icon, trend, animate }: {
         )}
       </div>
       <div className="text-[var(--foreground-secondary)] text-sm mb-2">{title}</div>
-      <div className={`text-3xl font-bold ${animate ? 'number-pop' : ''}`}>
+      <div className="text-3xl font-bold">
         {value}
       </div>
     </div>
@@ -546,58 +570,29 @@ function IntradayEquityCurve({ equityCurve }: { equityCurve: EquityCurveResponse
     return <div className="text-center py-8 text-[var(--foreground-secondary)]">No data available</div>;
   }
 
-  // Use actual equity values for better visualization
-  const equityValues = points.map(p => p.equity || 0);
-  const minEquity = Math.min(...equityValues);
-  const maxEquity = Math.max(...equityValues);
-  const equityRange = maxEquity - minEquity;
-  
-  // Calculate bar distribution to fill full width (edge to edge)
-  // Use viewBox units (0-100) for percentage-based scaling
-  const viewBoxWidth = 100;
-  const margin = 0.5; // Tiny margin on each side (0.5% of viewBox) to prevent edge clipping
-  const usableWidth = viewBoxWidth - (2 * margin);
-  const totalBarSpace = usableWidth / points.length;
-  const barWidthViewBox = totalBarSpace * 0.8; // 80% of space for bar width
-  const gapViewBox = totalBarSpace * 0.2; // 20% for gap between bars
-  
-  // Helper function to round values
-  const round = (value: number, decimals: number): number => {
-    return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
-  };
-  
-  // Calculate bar heights - map equity values to visible heights
-  // Use a range that ensures all bars are visible with good variation
-  const heightRange = maxHeight - minBarHeight;
-  
-  // Always use wave pattern to show full bar variation
-  // This ensures all bars are visible with meaningful heights (not just tiny bars)
-  const barHeights = points.map((p, index) => {
-    const time = p.time !== undefined ? p.time : (index / (points.length - 1 || 1));
-    
-    // Create smooth wave pattern for realistic intraday equity curve
-    // Multiple frequencies create natural-looking variation
-    const wave1 = Math.sin(time * Math.PI * 1.5) * 0.40;  // Main slow wave
-    const wave2 = Math.sin(time * Math.PI * 3.5 + 0.8) * 0.25;  // Medium frequency wave
-    const wave3 = Math.sin(time * Math.PI * 7 + 1.5) * 0.15;  // Higher frequency detail
-    const wave4 = Math.sin(time * Math.PI * 12 + 2.0) * 0.08;  // Fine detail wave
-    
-    // Add trend based on P&L direction (subtle)
-    const trend = equityCurve.total_pnl >= 0 
-      ? time * 0.15  // Upward trend if positive P&L
-      : -time * 0.15; // Downward trend if negative P&L
-    
-    // Combine all waves and trend
-    const waveSum = wave1 + wave2 + wave3 + wave4 + trend;
-    
-    // Map to bar height: center around 50% with variation from 15% to 85% of max height
-    // This ensures all bars are clearly visible and fill the chart area
-    const normalized = 0.50 + (waveSum * 0.35);
-    const clampedNormalized = Math.max(0.15, Math.min(0.85, normalized)); // Clamp to 15%-85%
-    
-    // Return bar height ensuring it's always visible (at least minBarHeight)
-    return Math.max(minBarHeight, minBarHeight + (clampedNormalized * heightRange));
-  });
+  // Use actual equity values to determine bar heights
+const equityValues = points.map(p => p.equity ?? 0);
+const minEquity = Math.min(...equityValues);
+const maxEquity = Math.max(...equityValues);
+const equityRange = maxEquity - minEquity || 1; // avoid division by zero
+
+// Calculate bar distribution to fill full width (edge to edge)
+// Use viewBox units (0-100) for percentage-based scaling
+const viewBoxWidth = 100;
+const margin = 0.5; // Tiny margin on each side (0.5% of viewBox) to prevent edge clipping
+const usableWidth = viewBoxWidth - 2 * margin;
+const totalBarSpace = usableWidth / points.length;
+const barWidthViewBox = totalBarSpace * 0.8; // 80% of space for bar width
+const gapViewBox = totalBarSpace * 0.2; // 20% for gap between bars
+
+const heightRange = maxHeight - minBarHeight;
+
+// Map each equity value to a visible bar height based on its position between min and max equity
+const barHeights = equityValues.map(equity => {
+  const normalized = (equity - minEquity) / equityRange; // 0 to 1
+  const height = minBarHeight + normalized * heightRange;
+  return Math.max(minBarHeight, Math.min(maxHeight, height));
+});
 
   return (
     <div className="w-full">
@@ -644,19 +639,6 @@ function IntradayEquityCurve({ equityCurve }: { equityCurve: EquityCurveResponse
             );
           })}
         </svg>
-      </div>
-      <div className="flex justify-between items-center mt-4 text-sm">
-        <div className="text-[var(--foreground-secondary)]">
-          Starting: ${equityCurve.starting_equity.toFixed(2)}
-        </div>
-        <div className={`font-bold ${equityCurve.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-          Current: ${equityCurve.current_equity.toFixed(2)}
-          {equityCurve.total_pnl !== 0 && (
-            <span className="ml-2">
-              ({equityCurve.total_pnl >= 0 ? '+' : ''}{equityCurve.total_pnl.toFixed(2)})
-            </span>
-          )}
-        </div>
       </div>
     </div>
   );

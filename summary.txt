@@ -1,0 +1,4 @@
+- Prices show a recent downward push after an initial period of relative stability.
+- Volatility, as measured by return ranges, remains elevated.
+- Choppy price action persists, with frequent directional shifts.
+- RSI signals a recent bounce from oversold territory, diverging from the continued price weakness.

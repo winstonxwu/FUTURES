@@ -1,0 +1,3 @@
+BUY 10 stocks of META.
+
+Given the auto-base suggestion is BUY and holdings are 0, buying is the only logical action. The market bias is bearish, but the risk profile is secure, so a small initial purchase is reasonable.
