@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiClient, HealthStatus, PositionsResponse } from '@/lib/api-client';
+import { apiClient, HealthStatus, PositionsResponse, DailyMovementsResponse, BigMoversResponse, PriceMovement } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -16,6 +16,8 @@ export default function DashboardPage() {
   const { user, logout, isAuthenticated } = useAuth();
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [positions, setPositions] = useState<PositionsResponse | null>(null);
+  const [dailyMovements, setDailyMovements] = useState<DailyMovementsResponse | null>(null);
+  const [bigMovers, setBigMovers] = useState<BigMoversResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [animateNumbers, setAnimateNumbers] = useState(false);
@@ -25,12 +27,16 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [healthData, positionsData] = await Promise.all([
+        const [healthData, positionsData, movementsData, moversData] = await Promise.all([
           apiClient.getHealth(),
           apiClient.getPositions(),
+          apiClient.getDailyMovements(),
+          apiClient.getBigMovers(),
         ]);
         setHealth(healthData);
         setPositions(positionsData);
+        setDailyMovements(movementsData);
+        setBigMovers(moversData);
         setError(null);
         setAnimateNumbers(true);
         setTimeout(() => setAnimateNumbers(false), 300);
@@ -227,6 +233,83 @@ export default function DashboardPage() {
           </p>
         </div>
 
+        {/* Daily Price Jumps & Dips */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 fade-in-up">
+          {/* Daily Price Jumps */}
+          <div className="glass-card rounded-2xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold flex items-center gap-3">
+                <span className="text-3xl">🚀</span>
+                Daily Price Jumps
+              </h2>
+              <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
+                Top Gainers Today
+              </span>
+            </div>
+            {dailyMovements && dailyMovements.jumps.length > 0 ? (
+              <div className="space-y-3">
+                {dailyMovements.jumps.map((movement, idx) => (
+                  <PriceMovementRow key={movement.ticker} movement={movement} isPositive={true} rank={idx + 1} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-[var(--foreground-secondary)]">
+                No data available
+              </div>
+            )}
+          </div>
+
+          {/* Daily Price Dips */}
+          <div className="glass-card rounded-2xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold flex items-center gap-3">
+                <span className="text-3xl">📉</span>
+                Daily Price Dips
+              </h2>
+              <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
+                Top Losers Today
+              </span>
+            </div>
+            {dailyMovements && dailyMovements.dips.length > 0 ? (
+              <div className="space-y-3">
+                {dailyMovements.dips.map((movement, idx) => (
+                  <PriceMovementRow key={movement.ticker} movement={movement} isPositive={false} rank={idx + 1} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-[var(--foreground-secondary)]">
+                No data available
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Big Daily Price Jumps - Well-Known Companies */}
+        <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <span className="text-3xl">📊</span>
+              Big Daily Price Movements
+            </h2>
+            <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
+              Major Companies Today
+            </span>
+          </div>
+          {bigMovers && bigMovers.movers.length > 0 ? (
+            <div className="overflow-x-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {bigMovers.movers.map((movement) => (
+                  <BigMoverCard key={movement.ticker} movement={movement} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-[var(--foreground-secondary)]">
+              No significant movements today
+            </div>
+          )}
+        </div>
+
         {/* Quick Actions */}
         <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
@@ -400,6 +483,95 @@ function TableSkeleton() {
           <div className="h-4 bg-[var(--background-secondary)] rounded w-24" />
         </div>
       ))}
+    </div>
+  );
+}
+
+// Price Movement Row Component
+function PriceMovementRow({ movement, isPositive, rank }: {
+  movement: PriceMovement;
+  isPositive: boolean;
+  rank: number;
+}) {
+  const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+  const bgColorClass = isPositive ? 'bg-green-500/10' : 'bg-red-500/10';
+  const arrow = isPositive ? '↑' : '↓';
+
+  return (
+    <div className={`flex items-center justify-between p-4 rounded-xl border border-[var(--border-color)] hover:bg-[var(--background-tertiary)] transition-colors ${bgColorClass}`}>
+      <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--background-secondary)] font-bold text-sm">
+          {rank}
+        </div>
+        <div className="flex-1">
+          <div className="font-bold text-lg">{movement.ticker}</div>
+          <div className="text-xs text-[var(--foreground-secondary)]">
+            ${movement.current_price.toFixed(2)}
+          </div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className={`font-bold text-lg ${colorClass} flex items-center gap-1 justify-end`}>
+          <span>{arrow}</span>
+          <span>{Math.abs(movement.change_pct).toFixed(2)}%</span>
+        </div>
+        <div className={`text-sm ${colorClass}`}>
+          {isPositive ? '+' : ''}${movement.change.toFixed(2)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Big Mover Card Component
+function BigMoverCard({ movement }: { movement: PriceMovement }) {
+  const isPositive = movement.change_pct >= 0;
+  const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+  const bgColorClass = isPositive ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30';
+  const arrow = isPositive ? '↑' : '↓';
+
+  return (
+    <div className={`p-5 rounded-xl border-2 ${bgColorClass} hover:scale-105 transition-transform cursor-pointer`}>
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="font-bold text-xl mb-1">{movement.ticker}</div>
+          {movement.name && (
+            <div className="text-xs text-[var(--foreground-secondary)] mb-2">
+              {movement.name}
+            </div>
+          )}
+        </div>
+        <div className={`text-2xl font-bold ${colorClass}`}>
+          {arrow}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-[var(--foreground-secondary)]">Current</span>
+          <span className="font-bold">${movement.current_price.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-[var(--foreground-secondary)]">Previous</span>
+          <span className="text-sm">${movement.previous_close.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between items-center pt-2 border-t border-[var(--border-color)]">
+          <span className="text-sm text-[var(--foreground-secondary)]">Change</span>
+          <div className="text-right">
+            <div className={`font-bold ${colorClass}`}>
+              {isPositive ? '+' : ''}{movement.change_pct.toFixed(2)}%
+            </div>
+            <div className={`text-xs ${colorClass}`}>
+              {isPositive ? '+' : ''}${movement.change.toFixed(2)}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center pt-1">
+          <span className="text-xs text-[var(--foreground-secondary)]">Volume</span>
+          <span className="text-xs text-[var(--foreground-secondary)]">
+            {(movement.volume / 1000000).toFixed(1)}M
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

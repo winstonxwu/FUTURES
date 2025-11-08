@@ -47,6 +47,27 @@ export interface PositionsResponse {
   capital: number;
 }
 
+export interface PriceMovement {
+  ticker: string;
+  name?: string;
+  previous_close: number;
+  current_price: number;
+  change: number;
+  change_pct: number;
+  volume: number;
+}
+
+export interface DailyMovementsResponse {
+  jumps: PriceMovement[];
+  dips: PriceMovement[];
+  timestamp: string;
+}
+
+export interface BigMoversResponse {
+  movers: PriceMovement[];
+  timestamp: string;
+}
+
 class APIClient {
   private baseURL: string;
 
@@ -95,6 +116,14 @@ class APIClient {
 
   async getCapital(): Promise<CapitalInfo> {
     return this.request<CapitalInfo>('/execution/capital');
+  }
+
+  async getDailyMovements(): Promise<DailyMovementsResponse> {
+    return this.request<DailyMovementsResponse>('/market/daily-movements');
+  }
+
+  async getBigMovers(): Promise<BigMoversResponse> {
+    return this.request<BigMoversResponse>('/market/big-movers');
   }
 }
 
