@@ -152,6 +152,69 @@ async def login(request: LoginRequest):
     }
 
 
+# API router auth endpoints (with trailing slashes to match frontend)
+@api_router.post("/login/")
+async def api_login(request: LoginRequest):
+    """Login endpoint under /api/auth prefix"""
+    # Check if user exists
+    if request.email not in MOCK_USERS:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    user = MOCK_USERS[request.email]
+
+    # Verify password
+    if hash_password(request.password) != user["password_hash"]:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Generate auth token
+    token = secrets.token_urlsafe(32)
+
+    return {
+        "token": token,
+        "user": {"id": user["id"], "email": user["email"], "name": user["name"]},
+        "message": "Login successful",
+    }
+
+
+@api_router.post("/register/")
+async def api_register(request: SignupRequest):
+    """Register endpoint under /api/auth prefix"""
+    # Check if user already exists
+    if request.email in MOCK_USERS:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Create new user
+    user_id = secrets.token_hex(16)
+    MOCK_USERS[request.email] = {
+        "id": user_id,
+        "email": request.email,
+        "name": request.name,
+        "password_hash": hash_password(request.password),
+        "created_at": datetime.now().isoformat(),
+    }
+
+    # Generate auth token
+    token = secrets.token_urlsafe(32)
+
+    return {
+        "token": token,
+        "user": {"id": user_id, "email": request.email, "name": request.name},
+        "message": "Account created successfully",
+    }
+
+
+@api_router.post("/logout/")
+async def api_logout():
+    """Logout endpoint under /api/auth prefix"""
+    # For a simple demo, logout just returns success
+    # In a real app, this would invalidate the token on the server
+    return {"message": "Logout successful"}
+
+
+# Include the API router
+app.include_router(api_router)
+
+
 if __name__ == "__main__":
     print("=" * 70)
     print("🚀 Futures AI Trader - Backend Server")
