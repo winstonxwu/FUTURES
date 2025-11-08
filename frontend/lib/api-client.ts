@@ -68,6 +68,25 @@ export interface BigMoversResponse {
   timestamp: string;
 }
 
+export interface NewsItem {
+  id: number;
+  headline: string;
+  summary: string;
+  source: string;
+  url: string;
+  image: string;
+  datetime: number;
+  datetime_formatted?: string;
+  category: string;
+  related: string;
+}
+
+export interface MarketNewsResponse {
+  news: NewsItem[];
+  timestamp: string;
+  source: string;
+}
+
 class APIClient {
   private baseURL: string;
 
@@ -124,6 +143,10 @@ class APIClient {
 
   async getBigMovers(): Promise<BigMoversResponse> {
     return this.request<BigMoversResponse>('/market/big-movers');
+  }
+
+  async getMarketNews(limit: number = 20, category: string = 'general'): Promise<MarketNewsResponse> {
+    return this.request<MarketNewsResponse>(`/market/news?limit=${limit}&category=${category}`);
   }
 }
 

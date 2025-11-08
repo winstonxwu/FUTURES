@@ -6,7 +6,7 @@ This creates a minimal FastAPI server that the frontend can connect to.
 import uvicorn
 from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
+from datetime import datetime, timedelta
 from pydantic import BaseModel
 import secrets
 import hashlib
@@ -29,6 +29,16 @@ try:
 except ImportError:
     MASSIVE_AVAILABLE = False
     logger.warning("Massive API client not available. Using mock data.")
+
+# Import Finnhub API client
+try:
+    from services.finnhub_api import get_finnhub_client, close_finnhub_client
+    import services.finnhub_api as finnhub_api
+    FINNHUB_AVAILABLE = True
+except ImportError:
+    FINNHUB_AVAILABLE = False
+    finnhub_api = None
+    logger.warning("Finnhub API client not available. Market news will use mock data.")
 
 # Create FastAPI app
 app = FastAPI(title="Futures AI Trader", version="1.0.0")
@@ -526,6 +536,120 @@ async def api_get_big_movers():
     return await _get_big_movers()
 
 
+# Market News endpoints
+async def _get_market_news(limit: int = 20, category: str = "general"):
+    """Get market news from Finnhub API or fallback to mock data"""
+    if FINNHUB_AVAILABLE:
+        try:
+            logger.info(f"Fetching market news from Finnhub API (category: {category}, limit: {limit})...")
+            # Finnhub client is synchronous, so we run it in executor
+            import asyncio
+            loop = asyncio.get_event_loop()
+            news_data = await loop.run_in_executor(None, finnhub_api.get_market_news, limit, category)
+            if news_data and news_data.get("news"):
+                logger.info(f"✅ Successfully fetched {len(news_data['news'])} news items from Finnhub")
+                return news_data
+        except Exception as e:
+            logger.error(f"Error fetching news from Finnhub API: {e}")
+            # Fall through to mock data
+    
+    # Fallback to mock data
+    logger.info("Using mock news data (Finnhub API unavailable or failed)")
+    return _get_mock_news(limit)
+
+
+def _get_mock_news(limit: int = 20):
+    """Generate mock market news"""
+    mock_news = [
+        {
+            "id": 1,
+            "headline": "Tech Stocks Rally on Strong Earnings Reports",
+            "summary": "Major technology companies report better-than-expected quarterly earnings, driving sector gains across the board.",
+            "source": "Financial Times",
+            "url": "https://www.ft.com/content/tech-earnings",
+            "image": "",
+            "datetime": int((datetime.now() - timedelta(hours=2)).timestamp()),
+            "datetime_formatted": (datetime.now() - timedelta(hours=2)).isoformat(),
+            "category": "general",
+            "related": "AAPL,MSFT,GOOGL",
+        },
+        {
+            "id": 2,
+            "headline": "Federal Reserve Hints at Interest Rate Changes",
+            "summary": "Federal Reserve officials suggest potential policy shifts in upcoming meetings, signaling possible changes to monetary policy.",
+            "source": "Bloomberg",
+            "url": "https://www.bloomberg.com/news/fed-policy",
+            "image": "",
+            "datetime": int((datetime.now() - timedelta(hours=4)).timestamp()),
+            "datetime_formatted": (datetime.now() - timedelta(hours=4)).isoformat(),
+            "category": "general",
+            "related": "",
+        },
+        {
+            "id": 3,
+            "headline": "Energy Sector Sees Volatility Amid Supply Concerns",
+            "summary": "Oil and gas stocks fluctuate as geopolitical tensions impact global supply chains and energy markets.",
+            "source": "Reuters",
+            "url": "https://www.reuters.com/business/energy",
+            "image": "",
+            "datetime": int((datetime.now() - timedelta(hours=6)).timestamp()),
+            "datetime_formatted": (datetime.now() - timedelta(hours=6)).isoformat(),
+            "category": "general",
+            "related": "XOM,CVX",
+        },
+        {
+            "id": 4,
+            "headline": "AI Companies Lead Market Gains",
+            "summary": "Artificial intelligence and machine learning firms see significant investor interest and market gains.",
+            "source": "Wall Street Journal",
+            "url": "https://www.wsj.com/articles/ai-stocks",
+            "image": "",
+            "datetime": int((datetime.now() - timedelta(hours=8)).timestamp()),
+            "datetime_formatted": (datetime.now() - timedelta(hours=8)).isoformat(),
+            "category": "general",
+            "related": "NVDA,AMD",
+        },
+        {
+            "id": 5,
+            "headline": "Consumer Spending Data Shows Mixed Signals",
+            "summary": "Latest retail sales figures indicate cautious consumer behavior in key sectors of the economy.",
+            "source": "MarketWatch",
+            "url": "https://www.marketwatch.com/story/consumer-spending",
+            "image": "",
+            "datetime": int((datetime.now() - timedelta(hours=10)).timestamp()),
+            "datetime_formatted": (datetime.now() - timedelta(hours=10)).isoformat(),
+            "category": "general",
+            "related": "",
+        },
+    ]
+    
+    # Repeat mock news to fill limit
+    while len(mock_news) < limit:
+        base_item = mock_news[len(mock_news) % 5].copy()
+        base_item["id"] = len(mock_news) + 1
+        base_item["datetime"] = int((datetime.now() - timedelta(hours=len(mock_news))).timestamp())
+        base_item["datetime_formatted"] = (datetime.now() - timedelta(hours=len(mock_news))).isoformat()
+        mock_news.append(base_item)
+    
+    return {
+        "news": mock_news[:limit],
+        "timestamp": datetime.now().isoformat(),
+        "source": "mock"
+    }
+
+
+@app.get("/market/news")
+async def get_market_news_endpoint(limit: int = 20, category: str = "general"):
+    """Get market news"""
+    return await _get_market_news(limit=limit, category=category)
+
+
+@api_router.get("/market/news")
+async def api_get_market_news(limit: int = 20, category: str = "general"):
+    """Get market news (under /api/auth prefix)"""
+    return await _get_market_news(limit=limit, category=category)
+
+
 # Auth models
 class SignupRequest(BaseModel):
     email: str
@@ -737,6 +861,13 @@ async def shutdown_event():
             logger.info("Massive API client closed")
         except Exception as e:
             logger.error(f"Error closing Massive API client: {e}")
+    
+    if FINNHUB_AVAILABLE:
+        try:
+            close_finnhub_client()
+            logger.info("Finnhub API client closed")
+        except Exception as e:
+            logger.error(f"Error closing Finnhub API client: {e}")
 
 
 if __name__ == "__main__":
@@ -758,6 +889,18 @@ if __name__ == "__main__":
     else:
         print(f"\n⚠️  Massive.com API integration: UNAVAILABLE (using mock data)")
         print(f"   Install aiohttp: pip install aiohttp")
+    
+    if FINNHUB_AVAILABLE:
+        api_key_set = bool(os.getenv("FINNHUB_API_KEY"))
+        if api_key_set:
+            print(f"\n✅ Finnhub API integration: ENABLED")
+        else:
+            print(f"\n⚠️  Finnhub API integration: AVAILABLE but FINNHUB_API_KEY not set")
+            print(f"   Set FINNHUB_API_KEY environment variable to use real market news")
+            print(f"   Get your free API key at: https://finnhub.io/register")
+    else:
+        print(f"\n⚠️  Finnhub API integration: UNAVAILABLE (using mock news)")
+        print(f"   Install finnhub-python: pip install finnhub-python")
     
     print("=" * 70)
     print()

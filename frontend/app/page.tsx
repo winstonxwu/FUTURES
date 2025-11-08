@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiClient, HealthStatus, PositionsResponse, DailyMovementsResponse, BigMoversResponse, PriceMovement } from '@/lib/api-client';
+import { apiClient, HealthStatus, PositionsResponse, DailyMovementsResponse, BigMoversResponse, PriceMovement, MarketNewsResponse, NewsItem } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [positions, setPositions] = useState<PositionsResponse | null>(null);
   const [dailyMovements, setDailyMovements] = useState<DailyMovementsResponse | null>(null);
   const [bigMovers, setBigMovers] = useState<BigMoversResponse | null>(null);
+  const [marketNews, setMarketNews] = useState<MarketNewsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [animateNumbers, setAnimateNumbers] = useState(false);
@@ -27,16 +28,18 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [healthData, positionsData, movementsData, moversData] = await Promise.all([
+        const [healthData, positionsData, movementsData, moversData, newsData] = await Promise.all([
           apiClient.getHealth(),
           apiClient.getPositions(),
           apiClient.getDailyMovements(),
           apiClient.getBigMovers(),
+          apiClient.getMarketNews(20, 'general'),
         ]);
         setHealth(healthData);
         setPositions(positionsData);
         setDailyMovements(movementsData);
         setBigMovers(moversData);
+        setMarketNews(newsData);
         setError(null);
         setAnimateNumbers(true);
         setTimeout(() => setAnimateNumbers(false), 300);
@@ -310,6 +313,30 @@ export default function DashboardPage() {
           )}
         </div>
 
+        {/* Market News Section */}
+        <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <span className="text-3xl">📰</span>
+              Market News
+            </h2>
+            <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
+              Latest Financial Updates
+            </span>
+          </div>
+          {marketNews && marketNews.news && marketNews.news.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {marketNews.news.slice(0, 10).map((newsItem: NewsItem) => (
+                <NewsCard key={newsItem.id} newsItem={newsItem} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-[var(--foreground-secondary)]">
+              No news available
+            </div>
+          )}
+        </div>
+
         {/* Quick Actions */}
         <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
@@ -520,6 +547,71 @@ function PriceMovementRow({ movement, isPositive, rank }: {
         </div>
       </div>
     </div>
+  );
+}
+
+// News Card Component
+function NewsCard({ newsItem }: { newsItem: NewsItem }) {
+  const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp * 1000);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffHours > 24) {
+      return date.toLocaleDateString();
+    } else if (diffHours > 0) {
+      return `${diffHours}h ago`;
+    } else if (diffMins > 0) {
+      return `${diffMins}m ago`;
+    } else {
+      return 'Just now';
+    }
+  };
+
+  return (
+    <a
+      href={newsItem.url || '#'}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block p-5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--background-tertiary)] hover:border-blue-500/50 transition-all cursor-pointer group"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          <h3 className="font-bold text-lg mb-2 group-hover:text-blue-400 transition-colors line-clamp-2">
+            {newsItem.headline}
+          </h3>
+          {newsItem.summary && (
+            <p className="text-sm text-[var(--foreground-secondary)] line-clamp-2 mb-3">
+              {newsItem.summary}
+            </p>
+          )}
+        </div>
+        {newsItem.image && (
+          <img
+            src={newsItem.image}
+            alt={newsItem.headline}
+            className="w-20 h-20 object-cover rounded-lg ml-4 flex-shrink-0"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        )}
+      </div>
+      <div className="flex items-center justify-between text-xs text-[var(--foreground-secondary)]">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{newsItem.source}</span>
+          {newsItem.related && newsItem.related.trim() && (
+            <>
+              <span>•</span>
+              <span>{newsItem.related}</span>
+            </>
+          )}
+        </div>
+        <span>{formatTime(newsItem.datetime)}</span>
+      </div>
+    </a>
   );
 }
 
