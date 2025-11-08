@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react';
 import { apiClient, HealthStatus, PositionsResponse } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamically import Dither to avoid SSR issues with Three.js
+const Dither = dynamic(() => import('@/components/Dither'), {
+  ssr: false,
+  loading: () => null
+});
 
 export default function DashboardPage() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -69,19 +76,26 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      {/* Animated background gradient */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
-      </div>
+      {/* Dithered Waves Background */}
+      <Dither
+        waveSpeed={0.03}
+        waveFrequency={2.5}
+        waveAmplitude={0.35}
+        waveColor={[0.2, 0.3, 0.5]}
+        colorNum={6}
+        pixelSize={3}
+        disableAnimation={false}
+        enableMouseInteraction={true}
+        mouseRadius={0.8}
+      />
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-8 md:mb-12 fade-in-up">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2 gradient-text">
-                ValueCell AI Trader
+                Futures AI Trader
               </h1>
               <p className="text-[var(--foreground-secondary)] text-lg">
                 LLM-Powered Algorithmic Trading Platform
