@@ -178,11 +178,31 @@ async def _get_daily_movements():
             if "results" in grouped_data and len(grouped_data["results"]) > 0:
                 results = grouped_data["results"]
                 
+                # Get previous day's data to calculate day-over-day changes
+                # Note: We use intraday change (open to close) as primary, but try to get
+                # previous day's close for better accuracy when possible
+                two_days_ago = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
+                prev_day_map = {}
+                
+                # Try to get previous day's close prices (but don't fail if rate limited)
+                try:
+                    prev_day_data = await client.get_grouped_daily(two_days_ago)
+                    if prev_day_data.get('status') == 'OK' and 'results' in prev_day_data:
+                        # Create a map of ticker to previous day's close
+                        for prev_result in prev_day_data['results']:
+                            prev_ticker = prev_result.get('T', '')
+                            if prev_ticker:
+                                prev_day_map[prev_ticker] = prev_result.get('c', 0)  # Previous close
+                        logger.info(f"Loaded {len(prev_day_map)} previous day prices for comparison")
+                except Exception as e:
+                    logger.debug(f"Could not fetch previous day data (may be rate limited): {e}")
+                    # Continue with intraday changes as fallback - this is fine for showing daily activity
+                
                 # Process results into our format
                 movements = []
                 for result in results:
                     ticker = result.get("T", "")  # Ticker symbol
-                    close_price = result.get("c", 0)  # Close price
+                    close_price = result.get("c", 0)  # Close price (yesterday's close)
                     open_price = result.get("o", 0)  # Open price
                     volume = result.get("v", 0)  # Volume
                     high = result.get("h", close_price)  # High
@@ -201,13 +221,24 @@ async def _get_daily_movements():
                         continue
                     
                     if close_price > 0 and open_price > 0:
-                        change = close_price - open_price
-                        change_pct = (change / open_price) * 100
+                        # Prefer day-over-day change if available, otherwise use intraday change
+                        # Intraday change (open to close) shows the day's trading activity
+                        # Day-over-day change shows comparison to previous day's close
+                        if ticker in prev_day_map and prev_day_map[ticker] > 0:
+                            # Use previous day's close for day-over-day comparison
+                            previous_close = prev_day_map[ticker]
+                            change = close_price - previous_close
+                            change_pct = (change / previous_close) * 100
+                        else:
+                            # Use intraday change (open to close) - shows the day's movement
+                            previous_close = open_price
+                            change = close_price - open_price
+                            change_pct = (change / open_price) * 100
                         
                         movements.append({
                             "ticker": ticker,
-                            "previous_close": open_price,
-                            "current_price": close_price,
+                            "previous_close": round(previous_close, 2),
+                            "current_price": round(close_price, 2),
                             "change": round(change, 2),
                             "change_pct": round(change_pct, 2),
                             "volume": int(volume),
@@ -216,8 +247,29 @@ async def _get_daily_movements():
                 # Sort and separate gainers/losers
                 movements.sort(key=lambda x: x["change_pct"], reverse=True)
                 
-                jumps = [m for m in movements if m["change_pct"] > 0][:10]
-                dips = [m for m in movements if m["change_pct"] < 0][:10]
+                # Filter for significant movements only
+                # Require at least 0.5% movement to filter out noise and tiny fluctuations
+                significant_jumps = [m for m in movements if m["change_pct"] >= 0.5]
+                significant_dips = [m for m in movements if m["change_pct"] <= -0.5]
+                
+                # If we don't have enough significant movers, lower threshold slightly but still filter noise
+                if len(significant_jumps) < 10:
+                    # Lower to 0.2% but still filter out tiny movements
+                    significant_jumps = [m for m in movements if m["change_pct"] >= 0.2]
+                if len(significant_dips) < 10:
+                    # Lower to -0.2% but still filter out tiny movements  
+                    significant_dips = [m for m in movements if m["change_pct"] <= -0.2]
+                
+                # If still not enough, take all positive/negative but sort by magnitude
+                if len(significant_jumps) < 10:
+                    significant_jumps = sorted([m for m in movements if m["change_pct"] > 0], 
+                                             key=lambda x: abs(x["change_pct"]), reverse=True)
+                if len(significant_dips) < 10:
+                    significant_dips = sorted([m for m in movements if m["change_pct"] < 0], 
+                                            key=lambda x: abs(x["change_pct"]), reverse=True)
+                
+                jumps = significant_jumps[:10]
+                dips = significant_dips[:10]
                 # Sort dips by most negative first
                 dips.sort(key=lambda x: x["change_pct"])
                 
