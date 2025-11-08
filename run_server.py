@@ -50,6 +50,14 @@ async def get_positions():
         "total_exposure": 0.0
     }
 
+@app.get("/execution/positions")
+async def get_execution_positions():
+    """Alternate endpoint for positions"""
+    return {
+        "positions": MOCK_POSITIONS,
+        "total_exposure": 0.0
+    }
+
 @app.post("/execution/execute")
 async def execute_trade(trade_data: dict):
     """Execute a trade (mock implementation)"""
