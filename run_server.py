@@ -112,20 +112,26 @@ def generate_price_movement(ticker: str, base_price: float = None) -> dict:
 
 
 # Cache for market data (refresh every 60 seconds)
+# Version 2: Updated filtering logic for price dips
 _market_data_cache = {
     "data": None,
     "timestamp": None,
-    "cache_duration": 60  # seconds
+    "cache_duration": 60,  # seconds
+    "version": 2  # Increment to invalidate old cache
 }
 
 
 async def _get_daily_movements():
     """Get daily price movements from Massive API or fallback to mock data"""
-    # Check cache
-    if _market_data_cache["data"] and _market_data_cache["timestamp"]:
+    # Check cache (also check version to invalidate old cache)
+    if (_market_data_cache["data"] and _market_data_cache["timestamp"] and 
+        _market_data_cache.get("version") == _market_data_cache["version"]):
         cache_age = (datetime.now() - _market_data_cache["timestamp"]).total_seconds()
         if cache_age < _market_data_cache["cache_duration"]:
             return _market_data_cache["data"]
+    # Clear cache if version mismatch or expired
+    _market_data_cache["data"] = None
+    _market_data_cache["timestamp"] = None
     
     # Try to get real data from Massive API
     if MASSIVE_AVAILABLE:
@@ -244,34 +250,43 @@ async def _get_daily_movements():
                             "volume": int(volume),
                         })
                 
-                # Sort and separate gainers/losers
-                movements.sort(key=lambda x: x["change_pct"], reverse=True)
+                # Separate gainers and losers first
+                all_jumps = [m for m in movements if m["change_pct"] > 0]
+                all_dips = [m for m in movements if m["change_pct"] < 0]
+                
+                # Sort jumps by percentage (highest first)
+                all_jumps.sort(key=lambda x: x["change_pct"], reverse=True)
+                # Sort dips by percentage (most negative first, i.e., smallest value first)
+                all_dips.sort(key=lambda x: x["change_pct"])
                 
                 # Filter for significant movements only
-                # Require at least 0.5% movement to filter out noise and tiny fluctuations
-                significant_jumps = [m for m in movements if m["change_pct"] >= 0.5]
-                significant_dips = [m for m in movements if m["change_pct"] <= -0.5]
+                # For jumps: require at least 0.5% movement to filter out noise
+                significant_jumps = [m for m in all_jumps if m["change_pct"] >= 0.5]
+                # For dips: require at least -0.5% movement (more negative = bigger drop)
+                significant_dips = [m for m in all_dips if m["change_pct"] <= -0.5]
                 
-                # If we don't have enough significant movers, lower threshold slightly but still filter noise
+                # If we don't have enough significant movers, lower threshold but still filter noise
                 if len(significant_jumps) < 10:
                     # Lower to 0.2% but still filter out tiny movements
-                    significant_jumps = [m for m in movements if m["change_pct"] >= 0.2]
+                    significant_jumps = [m for m in all_jumps if m["change_pct"] >= 0.2]
                 if len(significant_dips) < 10:
-                    # Lower to -0.2% but still filter out tiny movements  
-                    significant_dips = [m for m in movements if m["change_pct"] <= -0.2]
+                    # Lower to -0.2% but still filter out tiny movements
+                    significant_dips = [m for m in all_dips if m["change_pct"] <= -0.2]
                 
-                # If still not enough, take all positive/negative but sort by magnitude
+                # If still not enough, use all available (already sorted by magnitude)
                 if len(significant_jumps) < 10:
-                    significant_jumps = sorted([m for m in movements if m["change_pct"] > 0], 
-                                             key=lambda x: abs(x["change_pct"]), reverse=True)
+                    significant_jumps = all_jumps[:10]
+                else:
+                    significant_jumps = significant_jumps[:10]
+                    
                 if len(significant_dips) < 10:
-                    significant_dips = sorted([m for m in movements if m["change_pct"] < 0], 
-                                            key=lambda x: abs(x["change_pct"]), reverse=True)
+                    significant_dips = all_dips[:10]
+                else:
+                    significant_dips = significant_dips[:10]
                 
-                jumps = significant_jumps[:10]
-                dips = significant_dips[:10]
-                # Sort dips by most negative first
-                dips.sort(key=lambda x: x["change_pct"])
+                jumps = significant_jumps
+                dips = significant_dips
+                # Dips are already sorted by most negative first
                 
                 result_data = {
                     "jumps": jumps,
@@ -282,6 +297,7 @@ async def _get_daily_movements():
                 # Cache the result
                 _market_data_cache["data"] = result_data
                 _market_data_cache["timestamp"] = datetime.now()
+                _market_data_cache["version"] = _market_data_cache.get("version", 2)
                 
                 logger.info(f"✅ Successfully fetched {len(jumps)} gainers and {len(dips)} losers from Massive API (date: {date_used})")
                 return result_data
