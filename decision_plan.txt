@@ -1,6 +1,6 @@
 ACTION
-BUY 11 shares of GLW
-Exact allocation: 18.00% of $2,087 = $375.59 now.
-price_used = 31.5200
-MATH CHECK: shares × price_used = $346.72 ≤ allocation $375.59 — OK.
-WHY: Signals lean bullish; initiating/adding position consistent with risk.
+SELL 1 shares of META
+Exact allocation: 12.34% of $3,604 = $444.84 now.
+price_used = 444.8400
+MATH CHECK: shares × price_used = $444.84 ≤ allocation $444.84 — OK.
+WHY: Trimming exposure per signal and risk policy.

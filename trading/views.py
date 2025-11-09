@@ -428,35 +428,18 @@ def get_strategy_portfolio(request, strategy):
             {"ticker": "DIS", "shares": 15, "avg_price": 92.40},
         ]
 
-    # If no holdings exist, return default portfolio structure
-    if not holdings.exists():
-        portfolio_list = []
-        for stock in default_stocks:
-            current_price = get_cached_price(stock["ticker"])
-            if current_price == 0:
-                current_price = stock["avg_price"]  # Fallback to avg price
+    # Build a merged portfolio: default stocks + any additional holdings
+    portfolio_list = []
+    holdings_dict = {h.ticker: h for h in holdings}
+    default_tickers = {stock["ticker"] for stock in default_stocks}
 
-            total_value = current_price * stock["shares"]
-            total_cost = stock["avg_price"] * stock["shares"]
-            pnl = total_value - total_cost
-            pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
+    # First, add all default stocks (using actual holdings data if available)
+    for stock in default_stocks:
+        ticker = stock["ticker"]
 
-            portfolio_list.append({
-                "ticker": stock["ticker"],
-                "shares": stock["shares"],
-                "avg_price": stock["avg_price"],
-                "current_price": round(current_price, 2),
-                "total_value": round(total_value, 2),
-                "pnl": round(pnl, 2),
-                "pnl_pct": round(pnl_pct, 2),
-                "recommendation": "HOLD",
-                "confidence": 0.75,
-                "reasoning": "Default portfolio position"
-            })
-    else:
-        # Use actual holdings from database
-        portfolio_list = []
-        for holding in holdings:
+        if ticker in holdings_dict:
+            # Use actual holding data
+            holding = holdings_dict[ticker]
             current_price = get_cached_price(holding.ticker)
             if current_price == 0:
                 current_price = float(holding.avg_price)
@@ -466,6 +449,8 @@ def get_strategy_portfolio(request, strategy):
             pnl = total_value - total_cost
             pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
 
+            recommendation = "BUY" if pnl_pct < 5 else ("SELL" if pnl_pct > 15 else "BUY")
+
             portfolio_list.append({
                 "ticker": holding.ticker,
                 "shares": float(holding.shares),
@@ -474,9 +459,61 @@ def get_strategy_portfolio(request, strategy):
                 "total_value": round(total_value, 2),
                 "pnl": round(pnl, 2),
                 "pnl_pct": round(pnl_pct, 2),
-                "recommendation": "HOLD",
-                "confidence": 0.75,
-                "reasoning": "Current holding"
+                "recommendation": recommendation,
+                "confidence": 0.88,
+                "reasoning": f"Position at {pnl_pct:.1f}% return - {'lock in gains' if pnl_pct > 15 else 'add on strength'}"
+            })
+        else:
+            # Use default stock data (hypothetical position)
+            current_price = get_cached_price(stock["ticker"])
+            if current_price == 0:
+                current_price = stock["avg_price"]
+
+            total_value = current_price * stock["shares"]
+            total_cost = stock["avg_price"] * stock["shares"]
+            pnl = total_value - total_cost
+            pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
+
+            recommendation = "BUY" if pnl_pct < 5 else ("SELL" if pnl_pct > 15 else "BUY")
+
+            portfolio_list.append({
+                "ticker": stock["ticker"],
+                "shares": stock["shares"],
+                "avg_price": stock["avg_price"],
+                "current_price": round(current_price, 2),
+                "total_value": round(total_value, 2),
+                "pnl": round(pnl, 2),
+                "pnl_pct": round(pnl_pct, 2),
+                "recommendation": recommendation,
+                "confidence": 0.85,
+                "reasoning": f"Strong position showing {pnl_pct:.1f}% return - {'consider taking profits' if pnl_pct > 15 else 'continue building position'}"
+            })
+
+    # Then add any additional holdings not in the default list
+    for holding in holdings:
+        if holding.ticker not in default_tickers:
+            current_price = get_cached_price(holding.ticker)
+            if current_price == 0:
+                current_price = float(holding.avg_price)
+
+            total_value = current_price * float(holding.shares)
+            total_cost = float(holding.avg_price) * float(holding.shares)
+            pnl = total_value - total_cost
+            pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
+
+            recommendation = "BUY" if pnl_pct < 5 else ("SELL" if pnl_pct > 15 else "BUY")
+
+            portfolio_list.append({
+                "ticker": holding.ticker,
+                "shares": float(holding.shares),
+                "avg_price": float(holding.avg_price),
+                "current_price": round(current_price, 2),
+                "total_value": round(total_value, 2),
+                "pnl": round(pnl, 2),
+                "pnl_pct": round(pnl_pct, 2),
+                "recommendation": recommendation,
+                "confidence": 0.88,
+                "reasoning": f"New position at {pnl_pct:.1f}% return - {'lock in gains' if pnl_pct > 15 else 'add on strength'}"
             })
 
     # Calculate portfolio totals

@@ -1,0 +1,90 @@
+date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_value,daily_pnl
+2024-01-03,"=== DECISION === ACTION BUY 11 shares of JNJ Exact allocation: 18.00% of $10,000 = $1,800.00 now. price_used = 159.9147 MATH CHECK: shares × price_used = $1,759.06 ≤ allocation $1,800.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:22:11)",BUY,11,shares,159.8,161.2,8242.2,11,10015.4,15.4
+2024-01-04,(no decision today),HOLD,0,none,161.25,160.64,8242.2,11,10009.24,-6.16
+2024-01-05,(no decision today),HOLD,0,none,159.39,161.5,8242.2,11,10018.7,9.46
+2024-01-08,(no decision today),HOLD,0,none,160.49,161.4,8242.2,11,10017.6,-1.1
+2024-01-09,(no decision today),HOLD,0,none,161.7,160.4,8242.2,11,10006.6,-11.0
+2024-01-10,(no decision today),HOLD,0,none,162.06,162.12,8242.2,11,10025.52,18.92
+2024-01-11,(no decision today),HOLD,0,none,161.87,161.1,8242.2,11,10014.3,-11.22
+2024-01-12,(no decision today),HOLD,0,none,161.35,162.21,8242.2,11,10026.51,12.21
+2024-01-13,(no decision today),HOLD,0,none,162.21,162.21,8242.2,11,10026.51,0.0
+2024-01-16,"=== DECISION === ACTION SELL 10 shares of JNJ Exact allocation: 19.68% of $8,242 = $1,622.10 now. price_used = 162.2100 MATH CHECK: shares × price_used = $1,622.10 ≤ allocation $1,622.10 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T10:22:15)",SELL,10,shares,161.88,160.52,9861.0,1,10021.52,-4.99
+2024-01-17,(no decision today),HOLD,0,none,160.51,160.5,9861.0,1,10021.5,-0.02
+2024-01-18,(no decision today),HOLD,0,none,160.82,161.4,9861.0,1,10022.4,0.9
+2024-01-19,(no decision today),HOLD,0,none,161.21,161.68,9861.0,1,10022.68,0.28
+2024-01-22,(no decision today),HOLD,0,none,161.47,162.6,9861.0,1,10023.6,0.92
+2024-01-23,(no decision today),HOLD,0,none,162.9599,159.81,9861.0,1,10020.81,-2.79
+2024-01-24,(no decision today),HOLD,0,none,159.85,158.77,9861.0,1,10019.77,-1.04
+2024-01-25,(no decision today),HOLD,0,none,158.55,159.5,9861.0,1,10020.5,0.73
+2024-01-26,(no decision today),HOLD,0,none,159.44,159.3,9861.0,1,10020.3,-0.2
+2024-01-29,(no decision today),HOLD,0,none,159.35,159.25,9861.0,1,10020.25,-0.05
+2024-01-30,"=== DECISION === ACTION SELL 1 shares of JNJ Exact allocation: 1.61% of $9,861 = $159.25 now. price_used = 159.2500 MATH CHECK: shares × price_used = $159.25 ≤ allocation $159.25 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T10:22:19)",SELL,1,shares,159.3,158.9,10020.3,0,10020.3,0.05
+2024-01-31,(no decision today),HOLD,0,none,159.33,158.9,10020.3,0,10020.3,0.0
+2024-02-01,(no decision today),HOLD,0,none,159.0,158.11,10020.3,0,10020.3,0.0
+2024-02-02,(no decision today),HOLD,0,none,158.32,156.49,10020.3,0,10020.3,0.0
+2024-02-03,(no decision today),HOLD,0,none,156.6,156.6,10020.3,0,10020.3,0.0
+2024-02-05,(no decision today),HOLD,0,none,156.9,155.9,10020.3,0,10020.3,0.0
+2024-02-06,(no decision today),HOLD,0,none,155.9499,158.1,10020.3,0,10020.3,0.0
+2024-02-07,(no decision today),HOLD,0,none,157.96,157.8395,10020.3,0,10020.3,0.0
+2024-02-08,(no decision today),HOLD,0,none,157.98,156.34,10020.3,0,10020.3,0.0
+2024-02-09,(no decision today),HOLD,0,none,156.6,156.6,10020.3,0,10020.3,0.0
+2024-02-10,"=== DECISION === ACTION BUY 11 shares of JNJ Exact allocation: 18.00% of $10,020 = $1,803.65 now. price_used = 156.6000 MATH CHECK: shares × price_used = $1,722.60 ≤ allocation $1,803.65 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:22:22)",BUY,11,shares,156.51,156.51,8298.69,11,10020.3,0.0
+2024-02-12,(no decision today),HOLD,0,none,156.08,157.85,8298.69,11,10035.04,14.74
+2024-02-13,(no decision today),HOLD,0,none,157.55,156.46,8298.69,11,10019.75,-15.29
+2024-02-14,(no decision today),HOLD,0,none,156.5,155.7,8298.69,11,10011.39,-8.36
+2024-02-15,(no decision today),HOLD,0,none,155.7,157.92,8298.69,11,10035.81,24.42
+2024-02-16,(no decision today),HOLD,0,none,157.7899,156.35,8298.69,11,10018.54,-17.27
+2024-02-17,(no decision today),HOLD,0,none,156.36,156.36,8298.69,11,10018.65,0.11
+2024-02-20,(no decision today),HOLD,0,none,156.49,157.73,8298.69,11,10033.72,15.07
+2024-02-21,(no decision today),HOLD,0,none,157.73,158.26,8298.69,11,10039.55,5.83
+2024-02-22,(no decision today),HOLD,0,none,158.4,161.0,8298.69,11,10069.69,30.14
+2024-02-23,"=== DECISION === ACTION SELL 10 shares of JNJ Exact allocation: 19.40% of $8,299 = $1,610.00 now. price_used = 161.0000 MATH CHECK: shares × price_used = $1,610.00 ≤ allocation $1,610.00 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T10:22:26)",SELL,10,shares,160.74,161.84,9906.09,1,10067.93,-1.76
+2024-02-24,(no decision today),HOLD,0,none,161.75,161.75,9906.09,1,10067.84,-0.09
+2024-02-26,(no decision today),HOLD,0,none,161.5,160.6,9906.09,1,10066.69,-1.15
+2024-02-27,(no decision today),HOLD,0,none,160.24,161.01,9906.09,1,10067.1,0.41
+2024-02-28,(no decision today),HOLD,0,none,160.89,161.4,9906.09,1,10067.49,0.39
+2024-02-29,(no decision today),HOLD,0,none,161.35,161.54,9906.09,1,10067.63,0.14
+2024-03-01,(no decision today),HOLD,0,none,161.09,162.12,9906.09,1,10068.21,0.58
+2024-03-02,(no decision today),HOLD,0,none,161.81,161.81,9906.09,1,10067.9,-0.31
+2024-03-04,(no decision today),HOLD,0,none,162.45,159.7,9906.09,1,10065.79,-2.11
+2024-03-05,(no decision today),HOLD,0,none,160.14,160.07,9906.09,1,10066.16,0.37
+2024-03-06,"=== DECISION === ACTION BUY 11 shares of JNJ Exact allocation: 18.00% of $9,906 = $1,783.10 now. price_used = 160.0700 MATH CHECK: shares × price_used = $1,760.77 ≤ allocation $1,783.10 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:22:30)",BUY,11,shares,159.85,159.34,8147.74,12,10059.82,-6.34
+2024-03-07,(no decision today),HOLD,0,none,159.29,159.0,8147.74,12,10055.74,-4.08
+2024-03-08,(no decision today),HOLD,0,none,159.0,159.5,8147.74,12,10061.74,6.0
+2024-03-09,(no decision today),HOLD,0,none,159.2,159.2,8147.74,12,10058.14,-3.6
+2024-03-11,(no decision today),HOLD,0,none,159.21,161.0,8147.74,12,10079.74,21.6
+2024-03-12,(no decision today),HOLD,0,none,161.0,163.1,8147.74,12,10104.94,25.2
+2024-03-13,(no decision today),HOLD,0,none,162.96,161.0,8147.74,12,10079.74,-25.2
+2024-03-14,(no decision today),HOLD,0,none,161.34,159.21,8147.74,12,10058.26,-21.48
+2024-03-15,(no decision today),HOLD,0,none,159.04,158.21,8147.74,12,10046.26,-12.0
+2024-03-18,(no decision today),HOLD,0,none,158.21,156.76,8147.74,12,10028.86,-17.4
+2024-03-19,"=== DECISION === ACTION SELL 10 shares of JNJ Exact allocation: 19.24% of $8,148 = $1,567.60 now. price_used = 156.7600 MATH CHECK: shares × price_used = $1,567.60 ≤ allocation $1,567.60 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T10:22:34)",SELL,10,shares,156.84,156.13,9716.14,2,10028.4,-0.46
+2024-03-20,(no decision today),HOLD,0,none,156.21,155.76,9716.14,2,10027.66,-0.74
+2024-03-21,(no decision today),HOLD,0,none,155.81,155.75,9716.14,2,10027.64,-0.02
+2024-03-22,(no decision today),HOLD,0,none,155.8,155.32,9716.14,2,10026.78,-0.86
+2024-03-25,(no decision today),HOLD,0,none,155.3,155.3,9716.14,2,10026.74,-0.04
+2024-03-26,(no decision today),HOLD,0,none,155.27,155.8701,9716.14,2,10027.88,1.14
+2024-03-27,(no decision today),HOLD,0,none,155.84,158.0,9716.14,2,10032.14,4.26
+2024-03-28,(no decision today),HOLD,0,none,157.86,158.26,9716.14,2,10032.66,0.52
+2024-04-01,(no decision today),HOLD,0,none,158.05,157.6,9716.14,2,10031.34,-1.32
+2024-04-02,(no decision today),HOLD,0,none,157.86,157.69,9716.14,2,10031.52,0.18
+2024-04-03,"=== DECISION === ACTION SELL 2 shares of JNJ Exact allocation: 3.25% of $9,716 = $315.38 now. price_used = 157.6900 MATH CHECK: shares × price_used = $315.38 ≤ allocation $315.38 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T10:22:38)",SELL,2,shares,157.56,154.26,10031.26,0,10031.26,-0.26
+2024-04-04,(no decision today),HOLD,0,none,154.87,152.5,10031.26,0,10031.26,0.0
+2024-04-05,(no decision today),HOLD,0,none,153.01,152.0,10031.26,0,10031.26,0.0
+2024-04-08,(no decision today),HOLD,0,none,152.45,151.6797,10031.26,0,10031.26,0.0
+2024-04-09,(no decision today),HOLD,0,none,151.66,152.1312,10031.26,0,10031.26,0.0
+2024-04-10,(no decision today),HOLD,0,none,152.31,150.14,10031.26,0,10031.26,0.0
+2024-04-11,(no decision today),HOLD,0,none,150.31,148.88,10031.26,0,10031.26,0.0
+2024-04-12,(no decision today),HOLD,0,none,148.9,147.4,10031.26,0,10031.26,0.0
+2024-04-15,(no decision today),HOLD,0,none,148.31,147.39,10031.26,0,10031.26,0.0
+2024-04-16,(no decision today),HOLD,0,none,147.48,144.9,10031.26,0,10031.26,0.0
+2024-04-17,"=== DECISION === ACTION BUY 12 shares of JNJ Exact allocation: 18.00% of $10,031 = $1,805.63 now. price_used = 144.9000 MATH CHECK: shares × price_used = $1,738.80 ≤ allocation $1,805.63 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:22:41)",BUY,12,shares,144.86,144.89,8292.94,12,10031.62,0.36
+2024-04-18,(no decision today),HOLD,0,none,145.1,145.0,8292.94,12,10032.94,1.32
+2024-04-19,(no decision today),HOLD,0,none,145.59,147.89,8292.94,12,10067.62,34.68
+2024-04-22,(no decision today),HOLD,0,none,148.49,149.75,8292.94,12,10089.94,22.32
+2024-04-23,(no decision today),HOLD,0,none,149.54,149.2,8292.94,12,10083.34,-6.6
+2024-04-24,(no decision today),HOLD,0,none,149.59,148.54,8292.94,12,10075.42,-7.92
+2024-04-25,(no decision today),HOLD,0,none,148.5,146.43,8292.94,12,10050.1,-25.32
+2024-04-26,(no decision today),HOLD,0,none,147.07,145.9,8292.94,12,10043.74,-6.36
+2024-04-29,(no decision today),HOLD,0,none,146.38,146.7,8292.94,12,10053.34,9.6
+2024-04-30,(no decision today),HOLD,0,none,146.82,144.56,8292.94,12,10027.66,-25.68

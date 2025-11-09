@@ -1,5 +1,5 @@
 date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_value,daily_pnl
-2024-01-03,"=== DECISION === ACTION BUY 37 shares of NVDA Exact allocation: 18.00% of $10,000 = $1,800.00 now. price_used = 48.0000 MATH CHECK: shares × price_used = $1,776.00 ≤ allocation $1,800.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:00)",BUY,37,shares,47.987,47.6215,8224.48,37,9986.48,-13.52
+2024-01-03,"=== DECISION === ACTION BUY 37 shares of NVDA Exact allocation: 18.00% of $10,000 = $1,800.00 now. price_used = 48.0000 MATH CHECK: shares × price_used = $1,776.00 ≤ allocation $1,800.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:23:03)",BUY,37,shares,47.987,47.6215,8224.48,37,9986.48,-13.52
 2024-01-04,(no decision today),HOLD,0,none,47.62,48.075,8224.48,37,10003.26,16.78
 2024-01-05,(no decision today),HOLD,0,none,48.075,49.18,8224.48,37,10044.14,40.89
 2024-01-06,(no decision today),HOLD,0,none,49.17,49.17,8224.48,37,10043.77,-0.37
@@ -8,7 +8,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-01-10,(no decision today),HOLD,0,none,53.229,54.531,8224.48,37,10242.13,48.17
 2024-01-11,(no decision today),HOLD,0,none,54.545,54.701,8224.48,37,10248.42,6.29
 2024-01-12,(no decision today),HOLD,0,none,54.716,54.68,8224.48,37,10247.64,-0.78
-2024-01-13,"=== DECISION === ACTION BUY 27 shares of NVDA Exact allocation: 18.00% of $8,224 = $1,480.41 now. price_used = 54.6800 MATH CHECK: shares × price_used = $1,476.36 ≤ allocation $1,480.41 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:03)",BUY,27,shares,54.682,54.7122,6748.07,64,10249.65,2.01
+2024-01-13,"=== DECISION === ACTION BUY 27 shares of NVDA Exact allocation: 18.00% of $8,224 = $1,480.41 now. price_used = 54.6800 MATH CHECK: shares × price_used = $1,476.36 ≤ allocation $1,480.41 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:23:07)",BUY,27,shares,54.682,54.7122,6748.07,64,10249.65,2.01
 2024-01-16,(no decision today),HOLD,0,none,54.39,56.57,6748.07,64,10368.55,118.9
 2024-01-17,(no decision today),HOLD,0,none,56.57,55.94,6748.07,64,10328.23,-40.32
 2024-01-18,(no decision today),HOLD,0,none,55.92,57.39,6748.07,64,10421.03,92.8
@@ -18,7 +18,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-01-23,(no decision today),HOLD,0,none,59.732,60.185,6748.07,64,10599.91,29.12
 2024-01-24,(no decision today),HOLD,0,none,60.194,61.4,6748.07,64,10677.67,77.76
 2024-01-25,(no decision today),HOLD,0,none,61.41,60.634,6748.07,64,10628.64,-49.02
-2024-01-26,"=== DECISION === ACTION BUY 20 shares of NVDA Exact allocation: 18.00% of $6,748 = $1,214.65 now. price_used = 60.6340 MATH CHECK: shares × price_used = $1,212.68 ≤ allocation $1,214.65 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:06)",BUY,20,shares,60.633,61.008,5535.41,84,10660.08,31.44
+2024-01-26,"=== DECISION === ACTION BUY 20 shares of NVDA Exact allocation: 18.00% of $6,748 = $1,214.65 now. price_used = 60.6340 MATH CHECK: shares × price_used = $1,212.68 ≤ allocation $1,214.65 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:23:10)",BUY,20,shares,60.633,61.008,5535.41,84,10660.08,31.44
 2024-01-27,(no decision today),HOLD,0,none,61.007,61.026,5535.41,84,10661.59,1.51
 2024-01-29,(no decision today),HOLD,0,none,61.414,63.198,5535.41,84,10844.04,182.45
 2024-01-30,(no decision today),HOLD,0,none,63.198,61.475,5535.41,84,10699.31,-144.73
@@ -28,7 +28,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-02-03,(no decision today),HOLD,0,none,66.397,66.2,5535.41,84,11096.21,-16.63
 2024-02-05,(no decision today),HOLD,0,none,66.666,69.876,5535.41,84,11404.99,308.78
 2024-02-06,(no decision today),HOLD,0,none,69.871,67.452,5535.41,84,11201.38,-203.62
-2024-02-07,"=== DECISION === ACTION BUY 14 shares of NVDA Exact allocation: 18.00% of $5,535 = $996.37 now. price_used = 67.4520 MATH CHECK: shares × price_used = $944.33 ≤ allocation $996.37 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:09)",BUY,14,shares,67.452,70.44,4591.08,98,11494.2,292.82
+2024-02-07,"=== DECISION === ACTION BUY 14 shares of NVDA Exact allocation: 18.00% of $5,535 = $996.37 now. price_used = 67.4520 MATH CHECK: shares × price_used = $944.33 ≤ allocation $996.37 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:23:14)",BUY,14,shares,67.452,70.44,4591.08,98,11494.2,292.82
 2024-02-08,(no decision today),HOLD,0,none,70.44,69.748,4591.08,98,11426.38,-67.82
 2024-02-09,(no decision today),HOLD,0,none,69.748,72.128,4591.08,98,11659.62,233.24
 2024-02-10,(no decision today),HOLD,0,none,72.128,72.102,4591.08,98,11657.08,-2.55
@@ -38,7 +38,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-02-15,(no decision today),HOLD,0,none,73.797,73.075,4591.08,98,11752.43,-71.05
 2024-02-16,(no decision today),HOLD,0,none,73.063,72.72,4591.08,98,11717.64,-34.79
 2024-02-17,(no decision today),HOLD,0,none,72.73,72.72,4591.08,98,11717.64,0.0
-2024-02-20,"=== DECISION === ACTION BUY 11 shares of NVDA Exact allocation: 18.00% of $4,591 = $826.39 now. price_used = 72.7200 MATH CHECK: shares × price_used = $799.92 ≤ allocation $826.39 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:12)",BUY,11,shares,72.79,68.479,3790.39,109,11254.6,-463.04
+2024-02-20,"=== DECISION === ACTION BUY 11 shares of NVDA Exact allocation: 18.00% of $4,591 = $826.39 now. price_used = 72.7200 MATH CHECK: shares × price_used = $799.92 ≤ allocation $826.39 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:23:18)",BUY,11,shares,72.79,68.479,3790.39,109,11254.6,-463.04
 2024-02-21,(no decision today),HOLD,0,none,68.452,73.057,3790.39,109,11753.6,499.0
 2024-02-22,(no decision today),HOLD,0,none,73.041,79.901,3790.39,109,12499.6,746.0
 2024-02-23,(no decision today),HOLD,0,none,79.9,78.631,3790.39,109,12361.17,-138.43
@@ -48,21 +48,21 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-02-28,(no decision today),HOLD,0,none,78.526,77.33,3790.39,109,12219.36,-130.69
 2024-02-29,(no decision today),HOLD,0,none,77.31,79.5727,3790.39,109,12463.81,244.45
 2024-03-01,(no decision today),HOLD,0,none,79.589,82.322,3790.39,109,12763.49,299.67
-2024-03-02,"=== DECISION === ACTION BUY 8 shares of NVDA Exact allocation: 18.00% of $3,790 = $682.27 now. price_used = 82.3220 MATH CHECK: shares × price_used = $658.58 ≤ allocation $682.27 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:15)",BUY,8,shares,82.335,82.65,3131.71,117,12801.76,38.27
-2024-03-04,(no decision today),HOLD,0,none,83.212,85.91,3131.71,117,13183.18,381.42
-2024-03-05,(no decision today),HOLD,0,none,85.949,85.751,3131.71,117,13164.58,-18.6
-2024-03-06,(no decision today),HOLD,0,none,85.79,88.93,3131.71,117,13536.52,371.94
-2024-03-07,(no decision today),HOLD,0,none,88.925,94.25,3131.71,117,14158.96,622.44
-2024-03-08,(no decision today),HOLD,0,none,94.255,85.7,3131.71,117,13158.61,-1000.35
-2024-03-09,(no decision today),HOLD,0,none,85.702,85.1,3131.71,117,13088.41,-70.2
-2024-03-11,(no decision today),HOLD,0,none,85.8,86.98,3131.71,117,13308.37,219.96
-2024-03-12,(no decision today),HOLD,0,none,87.32,93.118,3131.71,117,14026.51,718.15
-2024-03-13,(no decision today),HOLD,0,none,93.6,90.5,3131.71,117,13720.21,-306.31
-2024-03-14,"=== DECISION === ACTION BUY 6 shares of NVDA Exact allocation: 18.00% of $3,132 = $563.71 now. price_used = 90.5000 MATH CHECK: shares × price_used = $543.00 ≤ allocation $563.71 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T23:46:18)",BUY,6,shares,90.7,87.298,2587.51,123,13325.16,-395.05
-2024-03-15,(no decision today),HOLD,0,none,87.0,88.192,2587.51,123,13435.12,109.96
-2024-03-18,(no decision today),HOLD,0,none,88.616,86.89,2587.51,123,13274.98,-160.15
-2024-03-19,(no decision today),HOLD,0,none,87.699,89.045,2587.51,123,13540.04,265.07
-2024-03-20,(no decision today),HOLD,0,none,89.022,91.2,2587.51,123,13805.11,265.07
-2024-03-21,(no decision today),HOLD,0,none,91.609,91.49,2587.51,123,13840.78,35.67
-2024-03-22,(no decision today),HOLD,0,none,91.6,94.02,2587.51,123,14151.97,311.19
-2024-03-25,(no decision today),HOLD,0,none,94.65,95.0,2587.51,123,14272.51,120.54
+2024-03-02,"=== DECISION === ACTION SELL 9 shares of NVDA Exact allocation: 19.55% of $3,790 = $740.90 now. price_used = 82.3220 MATH CHECK: shares × price_used = $740.90 ≤ allocation $740.90 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T10:23:22)",SELL,9,shares,82.335,82.65,4531.4,100,12796.4,32.92
+2024-03-04,(no decision today),HOLD,0,none,83.212,85.91,4531.4,100,13122.4,326.0
+2024-03-05,(no decision today),HOLD,0,none,85.949,85.751,4531.4,100,13106.5,-15.9
+2024-03-06,(no decision today),HOLD,0,none,85.79,88.93,4531.4,100,13424.4,317.9
+2024-03-07,(no decision today),HOLD,0,none,88.925,94.25,4531.4,100,13956.4,532.0
+2024-03-08,(no decision today),HOLD,0,none,94.255,85.7,4531.4,100,13101.4,-855.0
+2024-03-09,(no decision today),HOLD,0,none,85.702,85.1,4531.4,100,13041.4,-60.0
+2024-03-11,(no decision today),HOLD,0,none,85.8,86.98,4531.4,100,13229.4,188.0
+2024-03-12,(no decision today),HOLD,0,none,87.32,93.118,4531.4,100,13843.2,613.8
+2024-03-13,(no decision today),HOLD,0,none,93.6,90.5,4531.4,100,13581.4,-261.8
+2024-03-14,"=== DECISION === ACTION BUY 9 shares of NVDA Exact allocation: 18.00% of $4,531 = $815.65 now. price_used = 90.5000 MATH CHECK: shares × price_used = $814.50 ≤ allocation $815.65 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T10:23:26)",BUY,9,shares,90.7,87.298,3715.1,109,13230.59,-350.82
+2024-03-15,(no decision today),HOLD,0,none,87.0,88.192,3715.1,109,13328.03,97.45
+2024-03-18,(no decision today),HOLD,0,none,88.616,86.89,3715.1,109,13186.11,-141.92
+2024-03-19,(no decision today),HOLD,0,none,87.699,89.045,3715.1,109,13421.01,234.9
+2024-03-20,(no decision today),HOLD,0,none,89.022,91.2,3715.1,109,13655.9,234.9
+2024-03-21,(no decision today),HOLD,0,none,91.609,91.49,3715.1,109,13687.51,31.61
+2024-03-22,(no decision today),HOLD,0,none,91.6,94.02,3715.1,109,13963.28,275.77
+2024-03-25,(no decision today),HOLD,0,none,94.65,95.0,3715.1,109,14070.1,106.82

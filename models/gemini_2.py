@@ -19,7 +19,6 @@ MODEL = "models/gemini-2.0-flash"
 TEMP = 0.45
 MAX_TOKENS = 250
 N_LAST = 24
-# ★ 指示通りハードコード（本来は env 推奨）
 GEMINI_API_KEY = "AIzaSyAguY8tFf8snXyFHUsGFlE8BqMOdy1Nwr8"
 # =====================
 
@@ -86,7 +85,6 @@ def compute_shares(alloc_usd: float, price: float) -> int:
 
 # -------------------- LLM prompt --------------------
 def build_prompt_short(ticker, features, market, balance, holding, risk):
-    # BUY/SELL の二択だけにする（HOLD禁止）
     return f"""
 You must output exactly one word: BUY or SELL for {ticker}.
 
@@ -134,11 +132,10 @@ def main():
         sys.exit(1)
 
     ticker   = sys.argv[1].upper()
-    balance  = float(sys.argv[2])          # ← これを BUDGET として扱う
+    balance  = float(sys.argv[2])
     holding  = int(sys.argv[3])
     risk     = sys.argv[4].lower()
 
-    # 読み込み
     df = pd.read_csv(CSV_PATH)
     if "timestamp" in df.columns:
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
@@ -151,19 +148,15 @@ def main():
     if not price or price <= 0:
         raise SystemExit("❌ Could not extract a valid latest price from CSV.")
 
-    # ① LLM で BUY or SELL だけを決める
     decision_raw = ask_gemini(build_prompt_short(ticker, features, market, balance, holding, risk))
     decision = "BUY" if "buy" in decision_raw.lower() else "SELL"
 
-    # SELL だが保有0なら BUY に反転（売れないから）
     if decision == "SELL" and holding <= 0:
         decision = "BUY"
 
-    # ② Pythonで金額と株数（必ず整合するよう計算）
-    # 予算はユーザーの CURRENT_BALANCE を採用（←これが決定的修正）
     risk_cap = {"secure":0.12, "moderate":0.18, "aggressive":0.25}.get(risk, 0.18)
     alloc_pct  = 0.25 if decision == "BUY" else 0.20
-    cap_usd    = risk_cap * balance         # cap を「残高」に対して適用
+    cap_usd    = risk_cap * balance 
     alloc_usd  = min(alloc_pct * balance, cap_usd, balance)  # 配分は cap と残高で制限
     shares     = compute_shares(alloc_usd, price)
 

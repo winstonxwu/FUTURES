@@ -487,13 +487,6 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
                           </div>
                         </div>
 
-                        <div className="stock-recommendation">
-                          <div className="rec-badge">{stock.recommendation}</div>
-                          <div className="rec-confidence">{(stock.confidence * 100).toFixed(0)}% confident</div>
-                        </div>
-
-                        <p className="stock-reasoning">{stock.reasoning}</p>
-
                         <div className="stock-actions">
                           <button
                             className="action-btn buy-btn"
