@@ -1,6 +1,6 @@
 ACTION
-HOLD 0 shares of DIS
-Exact allocation: 18.00% of $75 = $13.54 now.
-price_used = 110.9000
-MATH CHECK: shares × price_used = $0.00 ≤ allocation $13.54 — OK.
-WHY: Price exceeds allowable allocation even at cap; cannot afford 1 share under current constraints.
+BUY 11 shares of GLW
+Exact allocation: 18.00% of $2,087 = $375.59 now.
+price_used = 31.5200
+MATH CHECK: shares × price_used = $346.72 ≤ allocation $375.59 — OK.
+WHY: Signals lean bullish; initiating/adding position consistent with risk.
