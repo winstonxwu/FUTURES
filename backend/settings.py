@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local apps
     "users",
+    "trading",
 ]
 
 MIDDLEWARE = [

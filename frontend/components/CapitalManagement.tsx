@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface CapitalManagementProps {
   currentCapital: number;
-  onCapitalSet: () => void;
+  onCapitalSet: (newCapital?: number) => void;
 }
 
 export default function CapitalManagement({ currentCapital, onCapitalSet }: CapitalManagementProps) {
@@ -29,13 +29,27 @@ export default function CapitalManagement({ currentCapital, onCapitalSet }: Capi
       });
 
       if (!response.ok) {
-        throw new Error('Failed to set capital');
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to set capital' }));
+        throw new Error(errorData.detail || 'Failed to set capital');
       }
 
       const data = await response.json();
-      setMessage(data.message);
+      setMessage(data.message || 'Capital updated successfully');
+      
+      // Extract the new capital amount from the response
+      const newCapital = data.available_cash ?? data.initial_cash ?? amount;
+      
+      // Call the callback immediately with the new capital value
+      // This allows the parent to update state without waiting for a fetch
+      onCapitalSet(newCapital);
+      
       setShowModal(false);
-      onCapitalSet();
+      
+      // Trigger portfolio update event to refresh all components
+      // Use a small delay to ensure backend has processed the update
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('portfolio-updated'));
+      }, 100);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Failed to set capital');
     } finally {
@@ -50,14 +64,14 @@ export default function CapitalManagement({ currentCapital, onCapitalSet }: Capi
         className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-500/25 flex items-center gap-2"
       >
         <span>💵</span>
-        Set Virtual Capital
+        Set Available Capital
       </button>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-8 max-w-md w-full border-2 border-green-500/30">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold">Set Virtual Capital</h3>
+              <h3 className="text-2xl font-bold">Set Available Capital</h3>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-gray-400 hover:text-white transition-colors text-2xl"
@@ -106,18 +120,6 @@ export default function CapitalManagement({ currentCapital, onCapitalSet }: Capi
               </div>
             </div>
 
-            <div className="bg-yellow-500/10 border-2 border-yellow-500/30 rounded-xl p-4 mb-6">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">⚠️</span>
-                <div className="flex-1">
-                  <p className="text-yellow-300 text-sm font-semibold mb-1">Warning</p>
-                  <p className="text-yellow-200/80 text-sm">
-                    This will reset your portfolio and clear all current holdings and trade history.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {message && (
               <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-300 text-sm">
                 {message}
@@ -137,7 +139,7 @@ export default function CapitalManagement({ currentCapital, onCapitalSet }: Capi
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold hover:from-green-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/25"
                 disabled={loading}
               >
-                {loading ? 'Setting...' : 'Confirm & Reset'}
+                {loading ? 'Setting...' : 'Confirm'}
               </button>
             </div>
           </div>

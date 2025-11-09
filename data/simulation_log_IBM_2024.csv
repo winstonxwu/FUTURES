@@ -1,0 +1,92 @@
+date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_value,daily_pnl
+2024-01-03,"=== DECISION === ACTION BUY 22308 shares of IBM Exact allocation: 18.00% of $20,000,000 = $3,600,000.00 now. price_used = 161.3707 MATH CHECK: shares × price_used = $3,599,857.58 ≤ allocation $3,600,000.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:10:48)",BUY,22308,shares,161.37,160.25,16400158.04,22308,19975015.04,-24984.96
+2024-01-04,(no decision today),HOLD,0,none,160.11,160.93,16400158.04,22308,19990184.48,15169.44
+2024-01-05,(no decision today),HOLD,0,none,160.97,159.16,16400158.04,22308,19950699.32,-39485.16
+2024-01-08,(no decision today),HOLD,0,none,158.8667,161.01,16400158.04,22308,19991969.12,41269.8
+2024-01-09,"=== DECISION === ACTION BUY 18334 shares of IBM Exact allocation: 18.00% of $16,400,158 = $2,952,028.45 now. price_used = 161.0100 MATH CHECK: shares × price_used = $2,951,957.34 ≤ allocation $2,952,028.45 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:10:51)",BUY,18334,shares,161.0,159.86,13448384.04,40642,19945414.16,-46554.96
+2024-01-10,(no decision today),HOLD,0,none,160.08,161.23,13448384.04,40642,20001093.7,55679.54
+2024-01-11,(no decision today),HOLD,0,none,160.88,162.02,13448384.04,40642,20033200.88,32107.18
+2024-01-12,(no decision today),HOLD,0,none,162.3,165.7,13448384.04,40642,20182763.44,149562.56
+2024-01-13,(no decision today),HOLD,0,none,165.61,165.61,13448384.04,40642,20179105.66,-3657.78
+2024-01-16,"=== DECISION === ACTION BUY 14616 shares of IBM Exact allocation: 18.00% of $13,448,384 = $2,420,709.13 now. price_used = 165.6100 MATH CHECK: shares × price_used = $2,420,555.76 ≤ allocation $2,420,709.13 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:10:53)",BUY,14616,shares,165.22,167.02,11033528.52,55258,20262719.68,83614.02
+2024-01-17,(no decision today),HOLD,0,none,166.96,165.9,11033528.52,55258,20200830.72,-61888.96
+2024-01-18,(no decision today),HOLD,0,none,165.9,166.61,11033528.52,55258,20240063.9,39233.18
+2024-01-19,(no decision today),HOLD,0,none,167.48,171.65,11033528.52,55258,20518564.22,278500.32
+2024-01-20,(no decision today),HOLD,0,none,171.7,171.7,11033528.52,55258,20521327.12,2762.9
+2024-01-22,"=== DECISION === ACTION BUY 11566 shares of IBM Exact allocation: 18.00% of $11,033,529 = $1,986,035.13 now. price_used = 171.7000 MATH CHECK: shares × price_used = $1,985,882.20 ≤ allocation $1,986,035.13 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:10:56)",BUY,11566,shares,172.0,173.0,9044176.52,66824,20604728.52,83401.4
+2024-01-23,(no decision today),HOLD,0,none,172.83,174.6,9044176.52,66824,20711646.92,106918.4
+2024-01-24,(no decision today),HOLD,0,none,174.59,187.41,9044176.52,66824,21567662.36,856015.44
+2024-01-25,(no decision today),HOLD,0,none,187.8,189.81,9044176.52,66824,21728039.96,160377.6
+2024-01-26,(no decision today),HOLD,0,none,189.96,187.13,9044176.52,66824,21548951.64,-179088.32
+2024-01-27,"=== DECISION === ACTION BUY 8699 shares of IBM Exact allocation: 18.00% of $9,044,177 = $1,627,951.77 now. price_used = 187.1300 MATH CHECK: shares × price_used = $1,627,843.87 ≤ allocation $1,627,951.77 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:10:59)",BUY,8699,shares,187.15,187.39,7416158.67,75523,21568413.64,19462.0
+2024-01-29,(no decision today),HOLD,0,none,187.45,186.98,7416158.67,75523,21537449.21,-30964.43
+2024-01-30,(no decision today),HOLD,0,none,187.13,187.0,7416158.67,75523,21538959.67,1510.46
+2024-01-31,(no decision today),HOLD,0,none,187.5,183.99,7416158.67,75523,21311635.44,-227324.23
+2024-02-01,(no decision today),HOLD,0,none,183.98,187.25,7416158.67,75523,21557840.42,246204.98
+2024-02-02,"=== DECISION === ACTION BUY 7129 shares of IBM Exact allocation: 18.00% of $7,416,159 = $1,334,908.56 now. price_used = 187.2500 MATH CHECK: shares × price_used = $1,334,905.25 ≤ allocation $1,334,908.56 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:02)",BUY,7129,shares,187.03,185.79,6082821.8,82652,21438736.88,-119103.54
+2024-02-03,(no decision today),HOLD,0,none,185.79,185.79,6082821.8,82652,21438736.88,0.0
+2024-02-05,(no decision today),HOLD,0,none,185.49,183.5,6082821.8,82652,21249463.8,-189273.08
+2024-02-06,(no decision today),HOLD,0,none,183.5,183.41,6082821.8,82652,21242025.12,-7438.68
+2024-02-07,(no decision today),HOLD,0,none,183.69,183.8,6082821.8,82652,21274259.4,32234.28
+2024-02-08,"=== DECISION === ACTION BUY 5957 shares of IBM Exact allocation: 18.00% of $6,082,822 = $1,094,907.92 now. price_used = 183.8000 MATH CHECK: shares × price_used = $1,094,896.60 ≤ allocation $1,094,907.92 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:05)",BUY,5957,shares,183.8,184.0,4987925.2,88609,21291981.2,17721.8
+2024-02-09,(no decision today),HOLD,0,none,184.36,186.2,4987925.2,88609,21486921.0,194939.8
+2024-02-10,(no decision today),HOLD,0,none,186.21,186.11,4987925.2,88609,21478946.19,-7974.81
+2024-02-12,(no decision today),HOLD,0,none,186.5,185.6229,4987925.2,88609,21435784.75,-43161.44
+2024-02-13,(no decision today),HOLD,0,none,185.66,184.2,4987925.2,88609,21309703.0,-126081.75
+2024-02-14,"=== DECISION === ACTION BUY 4874 shares of IBM Exact allocation: 18.00% of $4,987,925 = $897,826.54 now. price_used = 184.2000 MATH CHECK: shares × price_used = $897,790.80 ≤ allocation $897,826.54 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:08)",BUY,4874,shares,184.0,183.5,4091109.2,93483,21245239.7,-64463.3
+2024-02-15,(no decision today),HOLD,0,none,183.74,186.99,4091109.2,93483,21571495.37,326255.67
+2024-02-16,(no decision today),HOLD,0,none,186.99,187.22,4091109.2,93483,21592996.46,21501.09
+2024-02-17,(no decision today),HOLD,0,none,187.64,187.23,4091109.2,93483,21593931.29,934.83
+2024-02-20,(no decision today),HOLD,0,none,187.72,183.2643,4091109.2,93483,21223205.76,-370725.53
+2024-02-21,"=== DECISION === ACTION BUY 4018 shares of IBM Exact allocation: 18.00% of $4,091,109 = $736,399.66 now. price_used = 183.2643 MATH CHECK: shares × price_used = $736,355.96 ≤ allocation $736,399.66 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:11)",BUY,4018,shares,183.32,180.85,3354529.44,97501,20987585.29,-235620.47
+2024-02-22,(no decision today),HOLD,0,none,180.94,184.21,3354529.44,97501,21315188.65,327603.36
+2024-02-23,(no decision today),HOLD,0,none,184.2,185.3511,3354529.44,97501,21426447.04,111258.39
+2024-02-24,(no decision today),HOLD,0,none,185.69,185.69,3354529.44,97501,21459490.13,33043.09
+2024-02-26,(no decision today),HOLD,0,none,185.72,184.0,3354529.44,97501,21294713.44,-164776.69
+2024-02-27,"=== DECISION === ACTION BUY 3281 shares of IBM Exact allocation: 18.00% of $3,354,529 = $603,815.30 now. price_used = 184.0000 MATH CHECK: shares × price_used = $603,704.00 ≤ allocation $603,815.30 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:14)",BUY,3281,shares,184.0,184.9,2750825.44,100782,21385417.24,90703.8
+2024-02-28,(no decision today),HOLD,0,none,184.6,185.0,2750825.44,100782,21395495.44,10078.2
+2024-02-29,(no decision today),HOLD,0,none,185.3,185.0,2750825.44,100782,21395495.44,0.0
+2024-03-01,(no decision today),HOLD,0,none,184.9,188.2,2750825.44,100782,21717997.84,322502.4
+2024-03-02,(no decision today),HOLD,0,none,188.2,188.2,2750825.44,100782,21717997.84,0.0
+2024-03-04,"=== DECISION === ACTION BUY 2630 shares of IBM Exact allocation: 18.00% of $2,750,825 = $495,148.58 now. price_used = 188.2000 MATH CHECK: shares × price_used = $494,966.00 ≤ allocation $495,148.58 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:16)",BUY,2630,shares,189.0,192.91,2253755.44,103412,22202964.36,484966.52
+2024-03-05,(no decision today),HOLD,0,none,192.96,191.95,2253755.44,103412,22103688.84,-99275.52
+2024-03-06,(no decision today),HOLD,0,none,192.01,196.5,2253755.44,103412,22574213.44,470524.6
+2024-03-07,(no decision today),HOLD,0,none,196.0,196.54,2253755.44,103412,22578349.92,4136.48
+2024-03-08,(no decision today),HOLD,0,none,196.9,195.95,2253755.44,103412,22517336.84,-61013.08
+2024-03-09,"=== DECISION === ACTION BUY 2070 shares of IBM Exact allocation: 18.00% of $2,253,755 = $405,675.98 now. price_used = 195.9500 MATH CHECK: shares × price_used = $405,616.50 ≤ allocation $405,675.98 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:19)",BUY,2070,shares,196.15,196.15,1847724.94,105482,22538019.24,20682.4
+2024-03-11,(no decision today),HOLD,0,none,195.66,192.47,1847724.94,105482,22149845.48,-388173.76
+2024-03-12,(no decision today),HOLD,0,none,192.66,197.9001,1847724.94,105482,22722623.29,572777.81
+2024-03-13,(no decision today),HOLD,0,none,197.9,196.71,1847724.94,105482,22597089.16,-125534.13
+2024-03-14,(no decision today),HOLD,0,none,197.1,193.0,1847724.94,105482,22205750.94,-391338.22
+2024-03-15,"=== DECISION === ACTION BUY 1723 shares of IBM Exact allocation: 18.00% of $1,847,725 = $332,590.49 now. price_used = 193.0000 MATH CHECK: shares × price_used = $332,539.00 ≤ allocation $332,590.49 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:22)",BUY,1723,shares,193.4,191.3,1514496.74,107205,22022813.24,-182937.7
+2024-03-18,(no decision today),HOLD,0,none,191.15,191.71,1514496.74,107205,22066767.29,43954.05
+2024-03-19,(no decision today),HOLD,0,none,191.42,193.48,1514496.74,107205,22256520.14,189752.85
+2024-03-20,(no decision today),HOLD,0,none,193.11,194.92,1514496.74,107205,22410895.34,154375.2
+2024-03-21,(no decision today),HOLD,0,none,194.9,192.4965,1514496.74,107205,22151084.02,-259811.32
+2024-03-22,"=== DECISION === ACTION BUY 1416 shares of IBM Exact allocation: 18.00% of $1,514,497 = $272,609.41 now. price_used = 192.4965 MATH CHECK: shares × price_used = $272,575.04 ≤ allocation $272,609.41 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:25)",BUY,1416,shares,192.17,190.66,1242384.02,108621,21952063.88,-199020.14
+2024-03-25,(no decision today),HOLD,0,none,190.5,188.91,1242384.02,108621,21761977.13,-190086.75
+2024-03-26,(no decision today),HOLD,0,none,189.3,188.6,1242384.02,108621,21728304.62,-33672.51
+2024-03-27,(no decision today),HOLD,0,none,188.96,190.47,1242384.02,108621,21931425.89,203121.27
+2024-03-28,(no decision today),HOLD,0,none,190.4,190.39,1242384.02,108621,21922736.21,-8689.68
+2024-04-01,"=== DECISION === ACTION BUY 1174 shares of IBM Exact allocation: 18.00% of $1,242,384 = $223,629.12 now. price_used = 190.3900 MATH CHECK: shares × price_used = $223,517.86 ≤ allocation $223,629.12 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:28)",BUY,1174,shares,190.96,189.83,1018196.98,109795,21860581.83,-62154.38
+2024-04-02,(no decision today),HOLD,0,none,189.83,188.9,1018196.98,109795,21758472.48,-102109.35
+2024-04-03,(no decision today),HOLD,0,none,188.57,191.25,1018196.98,109795,22016490.73,258018.25
+2024-04-04,(no decision today),HOLD,0,none,191.34,188.25,1018196.98,109795,21687105.73,-329385.0
+2024-04-05,(no decision today),HOLD,0,none,188.36,189.01,1018196.98,109795,21770549.93,83444.2
+2024-04-08,"=== DECISION === ACTION BUY 969 shares of IBM Exact allocation: 18.00% of $1,018,197 = $183,275.46 now. price_used = 189.0100 MATH CHECK: shares × price_used = $183,150.69 ≤ allocation $183,275.46 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:31)",BUY,969,shares,189.0,189.82,835055.98,110764,21860278.46,89728.53
+2024-04-09,(no decision today),HOLD,0,none,189.31,189.3115,835055.98,110764,21803954.97,-56323.49
+2024-04-10,(no decision today),HOLD,0,none,188.9,186.0,835055.98,110764,21437159.98,-366794.99
+2024-04-11,(no decision today),HOLD,0,none,185.3,186.0,835055.98,110764,21437159.98,0.0
+2024-04-12,(no decision today),HOLD,0,none,185.72,182.11,835055.98,110764,21006288.02,-430871.96
+2024-04-15,"=== DECISION === ACTION BUY 825 shares of IBM Exact allocation: 18.00% of $835,056 = $150,310.08 now. price_used = 182.1100 MATH CHECK: shares × price_used = $150,240.75 ≤ allocation $150,310.08 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:34)",BUY,825,shares,183.72,181.5,683486.98,111589,20936890.48,-69397.54
+2024-04-16,(no decision today),HOLD,0,none,181.0,183.99,683486.98,111589,21214747.09,277856.61
+2024-04-17,(no decision today),HOLD,0,none,183.9,183.1,683486.98,111589,21115432.88,-99314.21
+2024-04-18,(no decision today),HOLD,0,none,183.19,181.8,683486.98,111589,20970367.18,-145065.7
+2024-04-19,(no decision today),HOLD,0,none,180.51,181.5812,683486.98,111589,20945951.51,-24415.67
+2024-04-22,"=== DECISION === ACTION BUY 677 shares of IBM Exact allocation: 18.00% of $683,487 = $123,027.66 now. price_used = 181.5812 MATH CHECK: shares × price_used = $122,930.47 ≤ allocation $123,027.66 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:37)",BUY,677,shares,181.9,181.95,560340.68,112266,20987139.38,41187.87
+2024-04-23,(no decision today),HOLD,0,none,182.38,183.99,560340.68,112266,21216162.02,229022.64
+2024-04-24,(no decision today),HOLD,0,none,183.3,168.51,560340.68,112266,19478284.34,-1737877.68
+2024-04-25,(no decision today),HOLD,0,none,168.75,168.85,560340.68,112266,19516454.78,38170.44
+2024-04-26,(no decision today),HOLD,0,none,169.32,167.08,560340.68,112266,19317743.96,-198710.82
+2024-04-29,"=== DECISION === ACTION BUY 603 shares of IBM Exact allocation: 18.00% of $560,341 = $100,861.32 now. price_used = 167.0800 MATH CHECK: shares × price_used = $100,749.24 ≤ allocation $100,861.32 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T21:11:40)",BUY,603,shares,167.17,167.19,459537.17,112869,19330105.28,12361.32
+2024-04-30,(no decision today),HOLD,0,none,167.11,165.88,459537.17,112869,19182246.89,-147858.39

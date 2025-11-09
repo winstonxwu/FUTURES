@@ -15,6 +15,10 @@ import os
 import sys
 import logging
 import yfinance as yf
+import requests
+import asyncio
+from typing import List, Dict
+from concurrent.futures import ThreadPoolExecutor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -63,7 +67,11 @@ MOCK_CAPITAL = 1000.0
 # Mock user database (in-memory for demo)
 MOCK_USERS = {}
 
+# Django backend URL
+DJANGO_BACKEND_URL = "http://localhost:8001"
+
 # Global Portfolio State (tracks all holdings and available capital)
+# NOTE: This is being phased out in favor of Django backend
 GLOBAL_PORTFOLIO = {
     "starting_balance": 10000.00,
     "available_cash": 10000.00,
@@ -75,6 +83,10 @@ GLOBAL_PORTFOLIO = {
 # Price cache to reduce API calls
 PRICE_CACHE = {}
 PRICE_CACHE_TTL = 30  # Cache prices for 30 seconds
+
+# Portfolio cache to reduce redundant fetches
+PORTFOLIO_CACHE = {}
+PORTFOLIO_CACHE_TTL = 10  # Cache portfolio data for 10 seconds
 
 def get_cached_price(ticker: str) -> float:
     """Get price with caching to reduce API calls"""
@@ -1003,15 +1015,29 @@ async def root():
 
 @app.get("/health")
 async def health():
-    # Calculate total positions from GLOBAL_PORTFOLIO
-    num_positions = len(GLOBAL_PORTFOLIO["holdings"])
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "broker_capital": GLOBAL_PORTFOLIO["available_cash"],
-        "num_positions": num_positions,
-        "num_events": 42,  # Mock event count
-    }
+    # Always get portfolio data from Django backend (primary source of truth)
+    try:
+        response = requests.get(f"{DJANGO_BACKEND_URL}/api/portfolio/", timeout=5)
+        if response.status_code == 200:
+            portfolio = response.json()
+            return {
+                "status": "healthy",
+                "timestamp": datetime.now().isoformat(),
+                "broker_capital": portfolio.get("available_cash", 0),
+                "num_positions": portfolio.get("position_count", len(portfolio.get("holdings", []))),
+                "num_events": 42,  # Mock event count
+            }
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend for health check: {e}")
+        # Don't fall back to GLOBAL_PORTFOLIO - return error status instead
+        return {
+            "status": "degraded",
+            "timestamp": datetime.now().isoformat(),
+            "broker_capital": 0,
+            "num_positions": 0,
+            "num_events": 0,
+            "error": "Django backend unavailable"
+        }
 
 
 @api_router.get("/health")
@@ -1182,226 +1208,78 @@ app.include_router(api_router)
 @app.get("/api/portfolio/{strategy}")
 async def get_portfolio(strategy: str):
     """
-    Get portfolio for a specific strategy with virtual money
+    Get portfolio for a specific strategy from Django backend (with caching)
 
     Args:
         strategy: One of 'secure', 'moderate', or 'aggressive'
     """
+    import time
     strategy = strategy.lower()
+    
+    # Check cache
+    cache_key = f"portfolio_{strategy}"
+    current_time = time.time()
+    if cache_key in PORTFOLIO_CACHE:
+        cached_data, cached_time = PORTFOLIO_CACHE[cache_key]
+        if current_time - cached_time < PORTFOLIO_CACHE_TTL:
+            return cached_data
 
-    # Virtual money settings
-    virtual_balance = 10000.00  # Starting with $10,000
-
-    # Strategy-specific stock portfolios
-    if strategy == "secure":
-        portfolio_stocks = [
-            {"ticker": "JNJ", "shares": 15, "avg_price": 155.50},
-            {"ticker": "PG", "shares": 12, "avg_price": 145.30},
-            {"ticker": "KO", "shares": 25, "avg_price": 58.20},
-            {"ticker": "WMT", "shares": 10, "avg_price": 165.40},
-            {"ticker": "VZ", "shares": 20, "avg_price": 38.75},
-        ]
-    elif strategy == "aggressive":
-        portfolio_stocks = [
-            {"ticker": "NVDA", "shares": 5, "avg_price": 485.30},
-            {"ticker": "TSLA", "shares": 8, "avg_price": 242.50},
-            {"ticker": "AMD", "shares": 15, "avg_price": 128.60},
-            {"ticker": "PLTR", "shares": 30, "avg_price": 28.40},
-            {"ticker": "COIN", "shares": 12, "avg_price": 195.80},
-        ]
-    else:  # moderate
-        portfolio_stocks = [
-            {"ticker": "AAPL", "shares": 10, "avg_price": 178.50},
-            {"ticker": "MSFT", "shares": 8, "avg_price": 380.25},
-            {"ticker": "V", "shares": 7, "avg_price": 258.30},
-            {"ticker": "JPM", "shares": 12, "avg_price": 155.60},
-            {"ticker": "DIS", "shares": 15, "avg_price": 92.40},
-        ]
-
-    # Fetch current prices using yfinance
-    tickers = [stock["ticker"] for stock in portfolio_stocks]
     try:
-        # Fetch real-time data for all tickers at once
-        ticker_data = yf.download(tickers, period="1d", progress=False)
-        current_prices = {}
-
-        if len(tickers) == 1:
-            # Single ticker returns different structure
-            ticker = tickers[0]
-            if not ticker_data.empty and 'Close' in ticker_data:
-                current_prices[ticker] = float(ticker_data['Close'].iloc[-1])
+        response = requests.get(f"{DJANGO_BACKEND_URL}/api/portfolio/{strategy}/", timeout=5)
+        if response.status_code == 200:
+            result = response.json()
+            # Update cache
+            PORTFOLIO_CACHE[cache_key] = (result, current_time)
+            return result
         else:
-            # Multiple tickers
-            if not ticker_data.empty and 'Close' in ticker_data:
-                for ticker in tickers:
-                    try:
-                        current_prices[ticker] = float(ticker_data['Close'][ticker].iloc[-1])
-                    except (KeyError, IndexError):
-                        logger.warning(f"Could not get current price for {ticker}, using average price")
-    except Exception as e:
-        logger.error(f"Error fetching stock prices with yfinance: {e}")
-        current_prices = {}
-
-    # Calculate current prices and recommendations
-    portfolio = []
-    for stock in portfolio_stocks:
-        # Use real current price if available, otherwise simulate
-        if stock["ticker"] in current_prices:
-            current_price = current_prices[stock["ticker"]]
-        else:
-            # Fallback: simulate current price (±10% from average)
-            price_change_pct = random.uniform(-10, 10)
-            current_price = stock["avg_price"] * (1 + price_change_pct / 100)
-
-        # Calculate P&L
-        total_value = current_price * stock["shares"]
-        total_cost = stock["avg_price"] * stock["shares"]
-        pnl = total_value - total_cost
-        pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
-
-        # Generate AI recommendation based on performance and strategy
-        if pnl_pct > 5:
-            if strategy == "secure":
-                recommendation = random.choice(["HOLD", "TAKE PROFIT"])
-            elif strategy == "aggressive":
-                recommendation = random.choice(["HOLD", "BUY MORE"])
-            else:
-                recommendation = random.choice(["HOLD", "TAKE PROFIT"])
-        elif pnl_pct < -5:
-            if strategy == "secure":
-                recommendation = random.choice(["SELL", "HOLD"])
-            elif strategy == "aggressive":
-                recommendation = random.choice(["BUY THE DIP", "HOLD"])
-            else:
-                recommendation = random.choice(["HOLD", "SELL"])
-        else:
-            recommendation = "HOLD"
-
-        # Generate reasoning
-        if recommendation == "BUY" or recommendation == "BUY MORE" or recommendation == "BUY THE DIP":
-            reasoning_templates = [
-                f"Strong momentum and {abs(pnl_pct):.1f}% {'gain' if pnl_pct > 0 else 'discount'}. Good entry point.",
-                f"Technical indicators suggest upward trend. Current position shows {pnl_pct:.1f}% return.",
-                f"Market conditions favorable. Consider adding to position at current levels.",
-            ]
-        elif recommendation == "SELL" or recommendation == "TAKE PROFIT":
-            reasoning_templates = [
-                f"Secure profits at {pnl_pct:.1f}% gain. Consider rebalancing portfolio.",
-                f"Position showing {abs(pnl_pct):.1f}% {'profit' if pnl_pct > 0 else 'loss'}. Risk management suggests exit.",
-                f"Technical resistance at current levels. Good time to lock in gains.",
-            ]
-        else:  # HOLD
-            reasoning_templates = [
-                f"Current position stable at {pnl_pct:.1f}% return. Maintain holdings.",
-                f"No significant catalyst for change. Continue monitoring position.",
-                f"Fair value range. Hold current position and reassess next quarter.",
-            ]
-
-        confidence = random.uniform(0.70, 0.95)
-
-        portfolio.append({
-            "ticker": stock["ticker"],
-            "shares": stock["shares"],
-            "avg_price": round(stock["avg_price"], 2),
-            "current_price": round(current_price, 2),
-            "total_value": round(total_value, 2),
-            "pnl": round(pnl, 2),
-            "pnl_pct": round(pnl_pct, 2),
-            "recommendation": recommendation,
-            "confidence": round(confidence, 2),
-            "reasoning": random.choice(reasoning_templates)
-        })
-
-    # Calculate portfolio totals
-    total_value = sum(s["total_value"] for s in portfolio)
-    total_pnl = sum(s["pnl"] for s in portfolio)
-    total_cost = sum(s["avg_price"] * s["shares"] for s in portfolio)
-
-    # Calculate available cash
-    available_cash = virtual_balance - total_cost
-
-    return {
-        "strategy": strategy,
-        "virtual_balance": virtual_balance,
-        "available_cash": round(available_cash, 2),
-        "portfolio": portfolio,
-        "total_value": round(total_value, 2),
-        "total_pnl": round(total_pnl, 2),
-        "total_pnl_pct": round((total_pnl / total_cost) * 100, 2) if total_cost > 0 else 0,
-        "timestamp": datetime.now().isoformat(),
-    }
+            raise HTTPException(status_code=response.status_code, detail="Failed to fetch portfolio")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend: {e}")
+        raise HTTPException(status_code=503, detail="Portfolio service unavailable")
 
 
-# Unified Portfolio endpoints
+# Unified Portfolio endpoints - Now using Django backend
 @app.get("/api/portfolio")
 async def get_unified_portfolio():
     """
-    Get unified portfolio across all strategies
+    Get unified portfolio across all strategies from Django backend
     Shows all current holdings and available capital
     """
-    # Fetch current prices for all holdings
-    holdings_with_prices = []
-    total_portfolio_value = 0
-
-    if GLOBAL_PORTFOLIO["holdings"]:
-        tickers = list(GLOBAL_PORTFOLIO["holdings"].keys())
-
-        try:
-            # Fetch current prices
-            ticker_data = yf.download(tickers, period="1d", progress=False)
-            current_prices = {}
-
-            if len(tickers) == 1:
-                ticker = tickers[0]
-                if not ticker_data.empty and 'Close' in ticker_data:
-                    current_prices[ticker] = float(ticker_data['Close'].iloc[-1])
-            else:
-                if not ticker_data.empty and 'Close' in ticker_data:
-                    for ticker in tickers:
-                        try:
-                            current_prices[ticker] = float(ticker_data['Close'][ticker].iloc[-1])
-                        except (KeyError, IndexError):
-                            pass
-        except Exception as e:
-            logger.error(f"Error fetching prices for unified portfolio: {e}")
-            current_prices = {}
-
-        # Build holdings list with current prices
-        for ticker, holding in GLOBAL_PORTFOLIO["holdings"].items():
-            current_price = current_prices.get(ticker, holding["avg_price"])
-            total_value = current_price * holding["shares"]
-            total_cost = holding["avg_price"] * holding["shares"]
-            pnl = total_value - total_cost
-            pnl_pct = (pnl / total_cost) * 100 if total_cost > 0 else 0
-
-            total_portfolio_value += total_value
-
-            holdings_with_prices.append({
-                "ticker": ticker,
-                "shares": holding["shares"],
-                "avg_price": round(holding["avg_price"], 2),
-                "current_price": round(current_price, 2),
-                "total_value": round(total_value, 2),
-                "pnl": round(pnl, 2),
-                "pnl_pct": round(pnl_pct, 2),
-                "strategy": holding.get("strategy", "unknown")
-            })
-
-    total_account_value = GLOBAL_PORTFOLIO["available_cash"] + total_portfolio_value
-    total_pnl = total_account_value - GLOBAL_PORTFOLIO["starting_balance"]
-    total_pnl_pct = (total_pnl / GLOBAL_PORTFOLIO["starting_balance"]) * 100 if GLOBAL_PORTFOLIO["starting_balance"] > 0 else 0
-
-    return {
-        "starting_balance": GLOBAL_PORTFOLIO["starting_balance"],
-        "available_cash": round(GLOBAL_PORTFOLIO["available_cash"], 2),
-        "portfolio_value": round(total_portfolio_value, 2),
-        "total_account_value": round(total_account_value, 2),
-        "total_pnl": round(total_pnl, 2),
-        "total_pnl_pct": round(total_pnl_pct, 2),
-        "holdings": holdings_with_prices,
-        "trade_count": len(GLOBAL_PORTFOLIO["trade_history"]),
-        "timestamp": datetime.now().isoformat(),
-    }
+    try:
+        response = requests.get(f"{DJANGO_BACKEND_URL}/api/portfolio/", timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            # Ensure consistent response format - Django returns the correct format
+            # Normalize holdings to ensure 'value' field exists (Django uses 'value', some formats use 'total_value')
+            holdings = data.get("holdings", [])
+            normalized_holdings = []
+            for holding in holdings:
+                normalized_holding = {
+                    **holding,
+                    # Ensure 'value' field exists - Django provides it, but ensure it's present
+                    "value": holding.get("value") or holding.get("total_value") or (holding.get("current_price", 0) * holding.get("shares", 0)),
+                }
+                normalized_holdings.append(normalized_holding)
+            
+            holdings_value = data.get("holdings_value", sum(h.get("value", h.get("total_value", 0)) for h in normalized_holdings))
+            total_value = data.get("total_value", data.get("available_cash", 0) + holdings_value)
+            
+            return {
+                "starting_balance": data.get("initial_cash", data.get("starting_balance", 10000.0)),
+                "initial_cash": data.get("initial_cash", data.get("starting_balance", 10000.0)),
+                "available_cash": data.get("available_cash", 0),
+                "holdings_value": holdings_value,
+                "total_value": total_value,
+                "total_pnl": data.get("total_pnl", 0),
+                "total_pnl_pct": data.get("total_pnl_pct", 0),
+                "holdings": normalized_holdings,
+                "position_count": data.get("position_count", len(normalized_holdings)),
+            }
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to fetch portfolio")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend: {e}")
+        raise HTTPException(status_code=503, detail="Portfolio service unavailable")
 
 
 class TradeRequest(BaseModel):
@@ -1409,124 +1287,6 @@ class TradeRequest(BaseModel):
     action: str  # "BUY" or "SELL"
     shares: int
     strategy: str  # "secure", "moderate", or "aggressive"
-
-
-@app.post("/api/portfolio/trade")
-async def execute_trade(trade: TradeRequest):
-    """
-    Execute a trade (buy or sell) and update the global portfolio
-    """
-    ticker = trade.ticker.upper()
-    action = trade.action.upper()
-    shares = trade.shares
-    strategy = trade.strategy.lower()
-
-    if action not in ["BUY", "SELL"]:
-        raise HTTPException(status_code=400, detail="Action must be BUY or SELL")
-
-    if shares <= 0:
-        raise HTTPException(status_code=400, detail="Shares must be positive")
-
-    # Fetch current price
-    try:
-        ticker_data = yf.download(ticker, period="1d", progress=False)
-        if ticker_data.empty or 'Close' not in ticker_data:
-            raise HTTPException(status_code=400, detail=f"Could not fetch price for {ticker}")
-
-        current_price = float(ticker_data['Close'].iloc[-1])
-    except Exception as e:
-        logger.error(f"Error fetching price for {ticker}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching price for {ticker}")
-
-    # Execute trade
-    if action == "BUY":
-        cost = current_price * shares
-
-        if cost > GLOBAL_PORTFOLIO["available_cash"]:
-            raise HTTPException(status_code=400, detail="Insufficient funds")
-
-        # Deduct cash
-        GLOBAL_PORTFOLIO["available_cash"] -= cost
-
-        # Add or update holding
-        if ticker in GLOBAL_PORTFOLIO["holdings"]:
-            # Update average price
-            existing = GLOBAL_PORTFOLIO["holdings"][ticker]
-            total_shares = existing["shares"] + shares
-            total_cost = (existing["avg_price"] * existing["shares"]) + cost
-            new_avg_price = total_cost / total_shares
-
-            GLOBAL_PORTFOLIO["holdings"][ticker] = {
-                "shares": total_shares,
-                "avg_price": new_avg_price,
-                "strategy": strategy
-            }
-        else:
-            GLOBAL_PORTFOLIO["holdings"][ticker] = {
-                "shares": shares,
-                "avg_price": current_price,
-                "strategy": strategy
-            }
-
-        # Record trade
-        GLOBAL_PORTFOLIO["trade_history"].append({
-            "ticker": ticker,
-            "action": "BUY",
-            "shares": shares,
-            "price": current_price,
-            "total": cost,
-            "strategy": strategy,
-            "timestamp": datetime.now().isoformat()
-        })
-
-        return {
-            "success": True,
-            "message": f"Bought {shares} shares of {ticker} at ${current_price:.2f}",
-            "cost": round(cost, 2),
-            "available_cash": round(GLOBAL_PORTFOLIO["available_cash"], 2)
-        }
-
-    elif action == "SELL":
-        # Check if we have the stock
-        if ticker not in GLOBAL_PORTFOLIO["holdings"]:
-            raise HTTPException(status_code=400, detail=f"You don't own any {ticker}")
-
-        holding = GLOBAL_PORTFOLIO["holdings"][ticker]
-
-        if shares > holding["shares"]:
-            raise HTTPException(status_code=400, detail=f"You only have {holding['shares']} shares of {ticker}")
-
-        # Calculate proceeds
-        proceeds = current_price * shares
-
-        # Add cash
-        GLOBAL_PORTFOLIO["available_cash"] += proceeds
-
-        # Update or remove holding
-        if shares == holding["shares"]:
-            # Sell all shares
-            del GLOBAL_PORTFOLIO["holdings"][ticker]
-        else:
-            # Sell partial shares
-            GLOBAL_PORTFOLIO["holdings"][ticker]["shares"] -= shares
-
-        # Record trade
-        GLOBAL_PORTFOLIO["trade_history"].append({
-            "ticker": ticker,
-            "action": "SELL",
-            "shares": shares,
-            "price": current_price,
-            "total": proceeds,
-            "strategy": strategy,
-            "timestamp": datetime.now().isoformat()
-        })
-
-        return {
-            "success": True,
-            "message": f"Sold {shares} shares of {ticker} at ${current_price:.2f}",
-            "proceeds": round(proceeds, 2),
-            "available_cash": round(GLOBAL_PORTFOLIO["available_cash"], 2)
-        }
 
 
 class DecisionRequest(BaseModel):
@@ -1540,63 +1300,44 @@ class DecisionRequest(BaseModel):
 @app.post("/api/portfolio/decision")
 async def record_decision(decision: DecisionRequest):
     """
-    Record a user's decision (BUY, SELL, or HOLD) for tracking history
+    Record a user's decision (BUY, SELL, or HOLD) in Django backend
     """
-    ticker = decision.ticker.upper()
-    action = decision.action.upper()
-    strategy = decision.strategy.lower()
-
-    if action not in ["BUY", "SELL", "HOLD"]:
-        raise HTTPException(status_code=400, detail="Action must be BUY, SELL, or HOLD")
-
-    # Fetch current price
     try:
-        ticker_data = yf.download(ticker, period="1d", progress=False)
-        if ticker_data.empty or 'Close' not in ticker_data:
-            current_price = 0.0  # For HOLD, we might not need the exact price
+        response = requests.post(
+            f"{DJANGO_BACKEND_URL}/api/portfolio/decision/",
+            json={
+                "ticker": decision.ticker,
+                "action": decision.action,
+                "shares": decision.shares,
+                "strategy": decision.strategy,
+                "reasoning": decision.recommendation.get("reasoning", ""),
+                "recommendation": decision.recommendation
+            },
+            timeout=5
+        )
+        if response.status_code == 200:
+            return response.json()
         else:
-            current_price = float(ticker_data['Close'].iloc[-1])
-    except Exception as e:
-        logger.error(f"Error fetching price for {ticker}: {e}")
-        current_price = 0.0
-
-    # Initialize strategy list if not exists
-    if strategy not in GLOBAL_PORTFOLIO["decision_history"]:
-        GLOBAL_PORTFOLIO["decision_history"][strategy] = []
-
-    # Record the decision
-    decision_record = {
-        "ticker": ticker,
-        "action": action,
-        "shares": decision.shares,
-        "price": current_price,
-        "timestamp": datetime.now().isoformat(),
-        "recommendation": decision.recommendation
-    }
-
-    GLOBAL_PORTFOLIO["decision_history"][strategy].append(decision_record)
-
-    return {
-        "success": True,
-        "message": f"Decision recorded: {action} {ticker}",
-        "decision": decision_record
-    }
+            raise HTTPException(status_code=response.status_code, detail="Failed to record decision")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend: {e}")
+        raise HTTPException(status_code=503, detail="Portfolio service unavailable")
 
 
 @app.get("/api/portfolio/decisions/{strategy}")
 async def get_decision_history(strategy: str):
     """
-    Get decision history for a specific strategy
+    Get decision history for a specific strategy from Django backend
     """
-    strategy = strategy.lower()
-
-    if strategy not in ["secure", "moderate", "aggressive"]:
-        raise HTTPException(status_code=400, detail="Invalid strategy")
-
-    return {
-        "strategy": strategy,
-        "decisions": GLOBAL_PORTFOLIO["decision_history"].get(strategy, [])
-    }
+    try:
+        response = requests.get(f"{DJANGO_BACKEND_URL}/api/portfolio/decisions/{strategy}/", timeout=5)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"decisions": []}
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend: {e}")
+        return {"decisions": []}
 
 
 @app.get("/api/ai/decision/{ticker}")
@@ -1622,11 +1363,24 @@ async def get_ai_decision(ticker: str, strategy: str = "moderate"):
     }
     aggressiveness = aggressiveness_map.get(strategy, "moderate")
 
-    # Get current balance and holdings for this ticker
-    available_cash = GLOBAL_PORTFOLIO["available_cash"]
-    current_shares = 0
-    if ticker in GLOBAL_PORTFOLIO["holdings"]:
-        current_shares = GLOBAL_PORTFOLIO["holdings"][ticker]["shares"]
+    # Get current balance and holdings for this ticker from Django
+    try:
+        portfolio_response = requests.get(f"{DJANGO_BACKEND_URL}/api/portfolio/", timeout=5)
+        if portfolio_response.status_code == 200:
+            portfolio_data = portfolio_response.json()
+            available_cash = portfolio_data.get("available_cash", 10000.0)
+            # Find holding for this ticker
+            current_shares = 0
+            for holding in portfolio_data.get("holdings", []):
+                if holding.get("ticker") == ticker:
+                    current_shares = holding.get("shares", 0)
+                    break
+        else:
+            available_cash = 10000.0
+            current_shares = 0
+    except:
+        available_cash = 10000.0
+        current_shares = 0
 
     try:
         # Run the run.sh script
@@ -1695,6 +1449,146 @@ async def get_ai_decision(ticker: str, strategy: str = "moderate"):
     except Exception as e:
         logger.error(f"Error running AI decision for {ticker}: {e}")
         raise HTTPException(status_code=500, detail=f"Error computing AI decision: {str(e)}")
+
+
+class BatchDecisionRequest(BaseModel):
+    tickers: List[str]
+    strategy: str = "moderate"
+
+
+@app.post("/api/ai/decisions/batch")
+async def get_batch_ai_decisions(request: BatchDecisionRequest):
+    """
+    Get AI decisions for multiple tickers in parallel (optimized for speed)
+    
+    Args:
+        request: BatchDecisionRequest with tickers list and strategy
+    """
+    tickers = request.tickers
+    strategy = request.strategy
+    import subprocess
+    import os
+    
+    strategy = strategy.lower()
+    
+    # Map strategy to aggressiveness parameter
+    aggressiveness_map = {
+        "secure": "conservative",
+        "moderate": "moderate",
+        "aggressive": "aggressive"
+    }
+    aggressiveness = aggressiveness_map.get(strategy, "moderate")
+    
+    # Get current balance and holdings from Django
+    try:
+        portfolio_response = requests.get(f"{DJANGO_BACKEND_URL}/api/portfolio/", timeout=5)
+        if portfolio_response.status_code == 200:
+            portfolio_data = portfolio_response.json()
+            available_cash = portfolio_data.get("available_cash", 10000.0)
+            holdings_map = {h.get("ticker"): h.get("shares", 0) for h in portfolio_data.get("holdings", [])}
+        else:
+            available_cash = 10000.0
+            holdings_map = {}
+    except:
+        available_cash = 10000.0
+        holdings_map = {}
+    
+    async def fetch_single_decision(ticker: str) -> Dict:
+        """Fetch AI decision for a single ticker"""
+        ticker = ticker.upper()
+        current_shares = holdings_map.get(ticker, 0)
+        
+        def run_decision_process():
+            """Run the decision process in a thread pool"""
+            try:
+                script_path = "/Users/winstonxwu/AI-FUTURES/run.sh"
+                result = subprocess.run(
+                    ["bash", script_path, ticker, str(available_cash), str(current_shares), aggressiveness],
+                    cwd="/Users/winstonxwu/AI-FUTURES",
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                )
+                
+                # Read decision_plan.txt
+                decision_file = "/Users/winstonxwu/AI-FUTURES/decision_plan.txt"
+                if os.path.exists(decision_file):
+                    with open(decision_file, 'r') as f:
+                        content = f.read()
+                    
+                    # Parse the decision
+                    lines = content.strip().split('\n')
+                    if len(lines) >= 2:
+                        action_line = lines[1]
+                        
+                        action = "HOLD"
+                        shares = 0
+                        if "BUY" in action_line:
+                            action = "BUY"
+                            parts = action_line.split()
+                            if len(parts) >= 2:
+                                try:
+                                    shares = int(parts[1])
+                                except:
+                                    shares = 0
+                        elif "SELL" in action_line:
+                            action = "SELL"
+                            parts = action_line.split()
+                            if len(parts) >= 2:
+                                try:
+                                    shares = int(parts[1])
+                                except:
+                                    shares = 0
+                        elif "HOLD" in action_line:
+                            action = "HOLD"
+                        
+                        reasoning = ""
+                        for line in lines:
+                            if line.startswith("WHY:"):
+                                reasoning = line.replace("WHY:", "").strip()
+                                break
+                        
+                        return {
+                            "ticker": ticker,
+                            "action": action,
+                            "shares": shares,
+                            "reasoning": reasoning,
+                            "full_decision": content
+                        }
+                
+                return {"ticker": ticker, "error": "Decision file not found or empty"}
+            except subprocess.TimeoutExpired:
+                return {"ticker": ticker, "error": "Timeout"}
+            except Exception as e:
+                logger.error(f"Error running AI decision for {ticker}: {e}")
+                return {"ticker": ticker, "error": str(e)}
+        
+        # Run in thread pool to avoid blocking
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as executor:
+            result = await loop.run_in_executor(executor, run_decision_process)
+        return result
+    
+    # Fetch all decisions concurrently
+    try:
+        tasks = [fetch_single_decision(ticker) for ticker in tickers]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Process results
+        decisions = {}
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error(f"Error in batch decision: {result}")
+                continue
+            if "error" not in result:
+                decisions[result["ticker"]] = result
+            else:
+                logger.warning(f"Error for {result.get('ticker', 'unknown')}: {result.get('error')}")
+        
+        return {"decisions": decisions}
+    except Exception as e:
+        logger.error(f"Error in batch AI decisions: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error computing batch AI decisions: {str(e)}")
 
 
 @app.post("/api/simulation/run")
@@ -1898,79 +1792,36 @@ class TradeRequest(BaseModel):
     shares: int
     strategy: str  # "secure", "moderate", or "aggressive"
 
-@app.get("/api/portfolio")
-async def get_portfolio():
-    """Get current portfolio state"""
-    # Calculate total portfolio value
-    total_value = GLOBAL_PORTFOLIO["available_cash"]
-    holdings_value = 0.0
-    holdings_list = []
-
-    for ticker, holding in GLOBAL_PORTFOLIO["holdings"].items():
-        # Get current price with caching
-        current_price = get_cached_price(ticker)
-        if current_price == 0:
-            current_price = holding["avg_price"]
-
-        holding_value = holding["shares"] * current_price
-        holdings_value += holding_value
-        pnl = (current_price - holding["avg_price"]) * holding["shares"]
-        pnl_pct = ((current_price - holding["avg_price"]) / holding["avg_price"]) * 100 if holding["avg_price"] > 0 else 0
-
-        holdings_list.append({
-            "ticker": ticker,
-            "shares": holding["shares"],
-            "avg_price": holding["avg_price"],
-            "current_price": current_price,
-            "value": holding_value,
-            "pnl": pnl,
-            "pnl_pct": pnl_pct,
-            "strategy": holding.get("strategy", "unknown")
-        })
-
-    total_value += holdings_value
-    total_pnl = total_value - GLOBAL_PORTFOLIO["starting_balance"]
-    total_pnl_pct = (total_pnl / GLOBAL_PORTFOLIO["starting_balance"]) * 100 if GLOBAL_PORTFOLIO["starting_balance"] > 0 else 0
-
-    return {
-        "starting_balance": GLOBAL_PORTFOLIO["starting_balance"],
-        "available_cash": GLOBAL_PORTFOLIO["available_cash"],
-        "holdings_value": holdings_value,
-        "total_value": total_value,
-        "total_pnl": total_pnl,
-        "total_pnl_pct": total_pnl_pct,
-        "holdings": holdings_list,
-        "trade_history": GLOBAL_PORTFOLIO["trade_history"][-20:],  # Last 20 trades
-        "timestamp": datetime.now().isoformat()
-    }
 
 
 @app.post("/api/portfolio/set-capital")
 async def set_capital(request: CapitalRequest):
-    """Set or reset available capital (virtual money)"""
+    """Set or reset available capital (virtual money) via Django backend"""
     if request.amount < 0:
         raise HTTPException(status_code=400, detail="Capital amount must be positive")
 
-    # Reset portfolio
-    GLOBAL_PORTFOLIO["starting_balance"] = request.amount
-    GLOBAL_PORTFOLIO["available_cash"] = request.amount
-    GLOBAL_PORTFOLIO["holdings"] = {}
-    GLOBAL_PORTFOLIO["trade_history"] = []
-    GLOBAL_PORTFOLIO["decision_history"] = {}
-
-    logger.info(f"Portfolio reset with capital: ${request.amount:,.2f}")
-
-    return {
-        "success": True,
-        "message": f"Portfolio reset with ${request.amount:,.2f}",
-        "starting_balance": request.amount,
-        "available_cash": request.amount
-    }
+    try:
+        response = requests.post(
+            f"{DJANGO_BACKEND_URL}/api/portfolio/set-capital/",
+            json={"amount": request.amount},
+            timeout=5
+        )
+        if response.status_code == 200:
+            logger.info(f"Portfolio reset with capital: ${request.amount:,.2f}")
+            # Invalidate all portfolio caches to ensure fresh data
+            PORTFOLIO_CACHE.clear()
+            logger.info("Portfolio cache cleared after capital update")
+            return response.json()
+        else:
+            raise HTTPException(status_code=response.status_code, detail=response.json())
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend: {e}")
+        raise HTTPException(status_code=503, detail="Portfolio service unavailable")
 
 
 @app.post("/api/portfolio/trade")
 async def execute_trade(request: TradeRequest):
-    """Execute a buy or sell trade"""
+    """Execute a buy or sell trade via Django backend"""
     ticker = request.ticker.upper()
     action = request.action.upper()
     shares = request.shares
@@ -1982,117 +1833,31 @@ async def execute_trade(request: TradeRequest):
     if action not in ["BUY", "SELL"]:
         raise HTTPException(status_code=400, detail="Action must be BUY or SELL")
 
-    # Get current price with caching
-    current_price = get_cached_price(ticker)
-    if current_price == 0:
-        logger.error(f"Error fetching price for {ticker}")
-        raise HTTPException(status_code=400, detail=f"Could not fetch price for {ticker}")
-
-    if action == "BUY":
-        # Calculate total cost
-        total_cost = shares * current_price
-
-        # Check if enough cash available
-        if total_cost > GLOBAL_PORTFOLIO["available_cash"]:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Insufficient funds. Need ${total_cost:,.2f}, have ${GLOBAL_PORTFOLIO['available_cash']:,.2f}"
-            )
-
-        # Execute buy
-        GLOBAL_PORTFOLIO["available_cash"] -= total_cost
-
-        if ticker in GLOBAL_PORTFOLIO["holdings"]:
-            # Update existing position (weighted average price)
-            holding = GLOBAL_PORTFOLIO["holdings"][ticker]
-            total_shares = holding["shares"] + shares
-            total_value = (holding["shares"] * holding["avg_price"]) + (shares * current_price)
-            new_avg_price = total_value / total_shares
-
-            GLOBAL_PORTFOLIO["holdings"][ticker] = {
-                "shares": total_shares,
-                "avg_price": new_avg_price,
-                "strategy": strategy
-            }
-        else:
-            # Create new position
-            GLOBAL_PORTFOLIO["holdings"][ticker] = {
+    try:
+        response = requests.post(
+            f"{DJANGO_BACKEND_URL}/api/portfolio/trade/",
+            json={
+                "ticker": ticker,
+                "action": action,
                 "shares": shares,
-                "avg_price": current_price,
                 "strategy": strategy
-            }
+            },
+            timeout=10
+        )
 
-        # Record trade
-        trade_record = {
-            "timestamp": datetime.now().isoformat(),
-            "action": "BUY",
-            "ticker": ticker,
-            "shares": shares,
-            "price": current_price,
-            "total": total_cost,
-            "strategy": strategy
-        }
-        GLOBAL_PORTFOLIO["trade_history"].append(trade_record)
-
-        logger.info(f"BUY {shares} shares of {ticker} at ${current_price:.2f} ({strategy} strategy)")
-
-        return {
-            "success": True,
-            "message": f"Bought {shares} shares of {ticker} at ${current_price:.2f}",
-            "trade": trade_record,
-            "available_cash": GLOBAL_PORTFOLIO["available_cash"],
-            "holding": GLOBAL_PORTFOLIO["holdings"][ticker]
-        }
-
-    elif action == "SELL":
-        # Check if we own the stock
-        if ticker not in GLOBAL_PORTFOLIO["holdings"]:
-            raise HTTPException(status_code=400, detail=f"You don't own any shares of {ticker}")
-
-        holding = GLOBAL_PORTFOLIO["holdings"][ticker]
-
-        # Check if we have enough shares
-        if shares > holding["shares"]:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Insufficient shares. Trying to sell {shares}, but only own {holding['shares']}"
-            )
-
-        # Execute sell
-        total_proceeds = shares * current_price
-        GLOBAL_PORTFOLIO["available_cash"] += total_proceeds
-
-        # Update or remove position
-        if shares == holding["shares"]:
-            # Selling all shares
-            del GLOBAL_PORTFOLIO["holdings"][ticker]
+        if response.status_code == 200:
+            result = response.json()
+            logger.info(f"{action} {shares} shares of {ticker} ({strategy} strategy)")
+            return result
         else:
-            # Selling partial shares
-            GLOBAL_PORTFOLIO["holdings"][ticker]["shares"] -= shares
-
-        # Record trade
-        pnl = (current_price - holding["avg_price"]) * shares
-        trade_record = {
-            "timestamp": datetime.now().isoformat(),
-            "action": "SELL",
-            "ticker": ticker,
-            "shares": shares,
-            "price": current_price,
-            "total": total_proceeds,
-            "pnl": pnl,
-            "strategy": strategy
-        }
-        GLOBAL_PORTFOLIO["trade_history"].append(trade_record)
-
-        logger.info(f"SELL {shares} shares of {ticker} at ${current_price:.2f} (P&L: ${pnl:,.2f})")
-
-        return {
-            "success": True,
-            "message": f"Sold {shares} shares of {ticker} at ${current_price:.2f}",
-            "trade": trade_record,
-            "available_cash": GLOBAL_PORTFOLIO["available_cash"],
-            "pnl": pnl
-        }
+            error_data = response.json()
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=error_data.get('error', 'Trade execution failed')
+            )
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Django backend: {e}")
+        raise HTTPException(status_code=503, detail="Portfolio service unavailable")
 
 
 @app.on_event("shutdown")

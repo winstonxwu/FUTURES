@@ -1,6 +1,6 @@
 ACTION
-BUY 13 shares of DIS
-Exact allocation: 18.00% of $8,389 = $1,510.05 now.
+HOLD 0 shares of DIS
+Exact allocation: 18.00% of $75 = $13.54 now.
 price_used = 110.9000
-MATH CHECK: shares × price_used = $1,441.70 ≤ allocation $1,510.05 — OK.
-WHY: Signals lean bullish; initiating/adding position consistent with risk.
+MATH CHECK: shares × price_used = $0.00 ≤ allocation $13.54 — OK.
+WHY: Price exceeds allowable allocation even at cap; cannot afford 1 share under current constraints.

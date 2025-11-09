@@ -244,7 +244,7 @@ export default function SimulationPage() {
                   type="number"
                   value={initialCash}
                   onChange={(e) => setInitialCash(parseFloat(e.target.value))}
-                  className="w-full px-4 py-3 bg-[var(--background-secondary)] border-2 border-[var(--border-color)] rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-[var(--background-secondary)] border-2 border-[var(--border-color)] rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all no-spinner"
                   min="1000"
                   step="1000"
                   required

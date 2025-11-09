@@ -42,6 +42,25 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [animateNumbers, setAnimateNumbers] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [availableCash, setAvailableCash] = useState<number | null>(null);
+
+  // Fetch available cash from portfolio endpoint
+  const fetchAvailableCash = async () => {
+    try {
+      // Add cache-busting query parameter to ensure fresh data
+      const response = await fetch(`http://localhost:8000/api/portfolio?t=${Date.now()}`);
+      if (response.ok) {
+        const data = await response.json();
+        const newAvailableCash = data.available_cash ?? null;
+        setAvailableCash(newAvailableCash);
+        console.log('Available cash updated:', newAvailableCash);
+      } else {
+        console.error('Failed to fetch available cash:', response.status, response.statusText);
+      }
+    } catch (err) {
+      console.error('Failed to fetch available cash:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +83,9 @@ export default function DashboardPage() {
         setError(null);
         setAnimateNumbers(true);
         setTimeout(() => setAnimateNumbers(false), 300);
+        
+        // Also fetch available cash from portfolio
+        await fetchAvailableCash();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data');
       } finally {
@@ -79,6 +101,8 @@ export default function DashboardPage() {
       try {
         const healthData = await apiClient.getHealth();
         setHealth(healthData);
+        // Also refresh available cash immediately when portfolio is updated
+        await fetchAvailableCash();
       } catch (err) {
         console.error('Failed to refresh health data:', err);
       }
@@ -149,10 +173,18 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4">
               {/* Capital Management */}
               <CapitalManagement
-                currentCapital={health?.broker_capital || 0}
-                onCapitalSet={() => {
-                  // Refresh health data
-                  apiClient.getHealth().then(setHealth);
+                currentCapital={availableCash ?? health?.broker_capital ?? 0}
+                onCapitalSet={async (newCapital?: number) => {
+                  // If newCapital is provided, update state immediately
+                  if (newCapital !== undefined) {
+                    setAvailableCash(newCapital);
+                    console.log('Available cash set to:', newCapital);
+                  }
+                  // Also refresh from backend to ensure consistency
+                  await new Promise(resolve => setTimeout(resolve, 200));
+                  await fetchAvailableCash();
+                  const healthData = await apiClient.getHealth();
+                  setHealth(healthData);
                 }}
               />
 
@@ -234,7 +266,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
           <MetricCard
             title="Available Capital"
-            value={`$${health?.broker_capital.toFixed(2) || '0.00'}`}
+            value={`$${(availableCash !== null ? availableCash : health?.broker_capital || 0).toFixed(2)}`}
             icon="💰"
             trend={null}
             animate={animateNumbers}

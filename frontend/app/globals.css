@@ -316,3 +316,15 @@ button, a, input, select, textarea {
 .animate-shimmer {
   animation: progress-shimmer 2s infinite;
 }
+
+/* Hide number input spinners */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

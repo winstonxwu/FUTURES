@@ -18,8 +18,8 @@ interface PortfolioStock {
 
 interface PortfolioData {
   strategy: string;
-  virtual_balance: number;
   available_cash: number;
+  initial_cash?: number;
   portfolio: PortfolioStock[];
   total_value: number;
   total_pnl: number;
@@ -48,6 +48,12 @@ interface AIDecision {
   full_decision: string;
 }
 
+// Cache for portfolio data (outside component to persist across renders)
+const portfolioCache: {[key: string]: {data: PortfolioData, timestamp: number}} = {};
+const PORTFOLIO_CACHE_TTL = 10000; // 10 seconds
+const decisionHistoryCache: {[key: string]: {data: Decision[], timestamp: number}} = {};
+const unifiedPortfolioCache: {data: any, timestamp: number} | null = null;
+
 export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) {
   const [selectedStrategy, setSelectedStrategy] = useState<'secure' | 'moderate' | 'aggressive' | null>(null);
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
@@ -57,6 +63,7 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
   const [decisionHistory, setDecisionHistory] = useState<Decision[]>([]);
   const [aiDecisions, setAiDecisions] = useState<{[key: string]: AIDecision}>({});
   const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingInProgress, setLoadingInProgress] = useState<string | null>(null);
 
   const strategyItems: CarouselItem[] = [
     {
@@ -84,17 +91,58 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
     const decisions: {[key: string]: AIDecision} = {};
 
     try {
-      // Fetch AI decision for each stock
-      for (const stock of stocks) {
-        try {
-          const response = await fetch(`http://localhost:8000/api/ai/decision/${stock.ticker}?strategy=${strategy}`);
-          if (response.ok) {
-            const decision = await response.json();
-            decisions[stock.ticker] = decision;
-          }
-        } catch (error) {
-          console.error(`Error fetching AI decision for ${stock.ticker}:`, error);
+      // Use batch endpoint for parallel processing
+      const tickers = stocks.map(stock => stock.ticker);
+      const response = await fetch(`http://localhost:8000/api/ai/decisions/batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tickers,
+          strategy
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Convert the decisions object to match our interface
+        if (data.decisions) {
+          Object.keys(data.decisions).forEach(ticker => {
+            decisions[ticker] = data.decisions[ticker];
+          });
         }
+      } else {
+        // Batch endpoint not available (404) or failed - use fallback
+        const errorText = await response.text().catch(() => 'Unknown error');
+        if (response.status === 404) {
+          console.warn('Batch AI decisions endpoint not available, using individual requests');
+        } else {
+          console.error('Failed to fetch batch AI decisions:', response.status, errorText);
+        }
+        
+        // Fallback to individual requests if batch fails
+        const promises = stocks.map(async (stock) => {
+          try {
+            const individualResponse = await fetch(`http://localhost:8000/api/ai/decision/${stock.ticker}?strategy=${strategy}`);
+            if (individualResponse.ok) {
+              const decision = await individualResponse.json();
+              return { ticker: stock.ticker, decision };
+            } else {
+              console.warn(`Failed to fetch AI decision for ${stock.ticker}: ${individualResponse.status}`);
+            }
+          } catch (error) {
+            console.error(`Error fetching AI decision for ${stock.ticker}:`, error);
+          }
+          return null;
+        });
+        
+        const results = await Promise.all(promises);
+        results.forEach(result => {
+          if (result) {
+            decisions[result.ticker] = result.decision;
+          }
+        });
       }
     } catch (error) {
       console.error('Error fetching AI decisions:', error);
@@ -108,46 +156,93 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
     const strategies: ('secure' | 'moderate' | 'aggressive')[] = ['secure', 'moderate', 'aggressive'];
     const strategy = strategies[idx];
 
+    // Prevent duplicate requests
+    if (loadingInProgress === strategy) {
+      return;
+    }
+
     setSelectedStrategy(strategy);
     setShowModal(true);
     setLoading(true);
     setAiDecisions({});
+    setLoadingInProgress(strategy);
 
-    // Fetch portfolio data, real available cash, and decision history
     try {
-      // Fetch unified portfolio to get real available cash
-      const unifiedResponse = await fetch(`http://localhost:8000/api/portfolio`);
+      const now = Date.now();
+      
+      // Check cache for portfolio data
+      let cachedPortfolio = portfolioCache[strategy];
+      if (cachedPortfolio && (now - cachedPortfolio.timestamp) < PORTFOLIO_CACHE_TTL) {
+        setPortfolioData(cachedPortfolio.data);
+        setLoading(false);
+        
+        // Still fetch AI decisions in background
+        if (cachedPortfolio.data.portfolio && cachedPortfolio.data.portfolio.length > 0) {
+          fetchAIDecisions(cachedPortfolio.data.portfolio, strategy).catch(error => {
+            console.error('Error loading AI decisions:', error);
+          });
+        }
+        setLoadingInProgress(null);
+        onStrategySelect?.(strategy);
+        return;
+      }
+
+      // Check cache for decision history
+      let cachedDecisions = decisionHistoryCache[strategy];
+      if (cachedDecisions && (now - cachedDecisions.timestamp) < PORTFOLIO_CACHE_TTL) {
+        setDecisionHistory(cachedDecisions.data);
+      }
+
+      // Fetch portfolio data, real available cash, and decision history in parallel
+      const shouldFetchDecisions = !cachedDecisions || (now - cachedDecisions.timestamp) >= PORTFOLIO_CACHE_TTL;
+      
+      const [unifiedResponse, portfolioResponse, decisionsResponse] = await Promise.all([
+        fetch(`http://localhost:8000/api/portfolio`),
+        fetch(`http://localhost:8000/api/portfolio/${strategy}`),
+        shouldFetchDecisions ? fetch(`http://localhost:8000/api/portfolio/decisions/${strategy}`) : Promise.resolve(null)
+      ]);
+
+      // Process unified portfolio
       if (unifiedResponse.ok) {
         const unifiedData = await unifiedResponse.json();
         setRealAvailableCash(unifiedData.available_cash);
       }
 
-      // Fetch decision history for this strategy
-      const decisionsResponse = await fetch(`http://localhost:8000/api/portfolio/decisions/${strategy}`);
-      if (decisionsResponse.ok) {
+      // Process decision history
+      if (decisionsResponse && decisionsResponse.ok) {
         const decisionsData = await decisionsResponse.json();
-        setDecisionHistory(decisionsData.decisions || []);
+        const decisions = decisionsData.decisions || [];
+        setDecisionHistory(decisions);
+        decisionHistoryCache[strategy] = { data: decisions, timestamp: now };
+      } else if (cachedDecisions) {
+        setDecisionHistory(cachedDecisions.data);
       }
 
-      // Fetch strategy-specific portfolio
-      const response = await fetch(`http://localhost:8000/api/portfolio/${strategy}`);
-      if (response.ok) {
-        const data = await response.json();
+      // Process portfolio data
+      if (portfolioResponse && portfolioResponse.ok) {
+        const data = await portfolioResponse.json();
         setPortfolioData(data);
+        portfolioCache[strategy] = { data, timestamp: now };
+        setLoading(false); // Show portfolio immediately
 
-        // Fetch AI decisions for each stock in the portfolio
+        // Fetch AI decisions asynchronously (non-blocking)
         if (data.portfolio && data.portfolio.length > 0) {
-          await fetchAIDecisions(data.portfolio, strategy);
+          // Don't await - let it load in the background
+          fetchAIDecisions(data.portfolio, strategy).catch(error => {
+            console.error('Error loading AI decisions:', error);
+          });
         }
       } else {
         console.error('Failed to fetch portfolio');
         setPortfolioData(null);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching portfolio:', error);
       setPortfolioData(null);
-    } finally {
       setLoading(false);
+    } finally {
+      setLoadingInProgress(null);
     }
 
     onStrategySelect?.(strategy);
@@ -157,6 +252,18 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
     setShowModal(false);
     setSelectedStrategy(null);
     setPortfolioData(null);
+  };
+
+  // Function to invalidate cache (call after trades)
+  const invalidateCache = (strategy?: string) => {
+    if (strategy) {
+      delete portfolioCache[strategy];
+      delete decisionHistoryCache[strategy];
+    } else {
+      // Invalidate all
+      Object.keys(portfolioCache).forEach(key => delete portfolioCache[key]);
+      Object.keys(decisionHistoryCache).forEach(key => delete decisionHistoryCache[key]);
+    }
   };
 
   const handleAction = async (ticker: string, action: string, stock: PortfolioStock) => {
@@ -231,6 +338,9 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
         if (tradeResponse.ok) {
           alert(result.message + `\n\nAvailable Cash: $${result.available_cash.toFixed(2)}`);
 
+          // Invalidate cache to force refresh
+          invalidateCache(selectedStrategy || undefined);
+
           // Emit custom event to notify main page to refresh
           window.dispatchEvent(new CustomEvent('portfolio-updated'));
         } else {
@@ -290,11 +400,7 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
                   <div className="portfolio-summary">
                     <div className="summary-grid">
                       <div className="summary-item">
-                        <span className="summary-label">Virtual Balance</span>
-                        <span className="summary-value">${portfolioData.virtual_balance.toFixed(2)}</span>
-                      </div>
-                      <div className="summary-item">
-                        <span className="summary-label">Available Cash</span>
+                        <span className="summary-label">Available Capital</span>
                         <span className="summary-value cash">${(realAvailableCash !== null ? realAvailableCash : portfolioData.available_cash).toFixed(2)}</span>
                       </div>
                       <div className="summary-item">
@@ -306,6 +412,10 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
                         <span className={`summary-value ${portfolioData.total_pnl >= 0 ? 'positive' : 'negative'}`}>
                           {portfolioData.total_pnl >= 0 ? '+' : ''}${portfolioData.total_pnl.toFixed(2)} ({portfolioData.total_pnl_pct.toFixed(2)}%)
                         </span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="summary-label">Initial Capital</span>
+                        <span className="summary-value">${(portfolioData.initial_cash || 10000).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>

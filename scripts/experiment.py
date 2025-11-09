@@ -8,27 +8,6 @@ import re
 import subprocess
 import pandas as pd
 
-# -----------------------------
-# 取引ルールと入出力の約束
-# -----------------------------
-# - 助言は毎営業日 "前日まで" のデータに基づき gemini_2.py に問い合わせる
-#   -> ./data/gemini.csv に i日目の直前までを毎回上書き
-# - 実行価格はデフォルトで当日の「Open」（なければ Close）
-# - 評価（損益計算）は当日の「Close」（なければ実行価格）
-# - 約定は整数株、手数料なし（--feeで任意に設定可）
-# - gemini_2.py の出力は自由形式テキストを想定し、
-#   以下のキーワードでアクションを推定する（英語/日本語をカバー）
-#     BUY:  "buy", "go long", "購入", "買", "買い", "買付", "ロング"
-#     SELL: "sell", "exit", "売", "売り", "手仕舞", "利確", "損切"
-#     HOLD: "hold", "wait", "様子見", "ホールド", "維持"
-# - 量の指定は以下を自動解釈（どれもなければ aggressive=1.0, その他=0.5 の割合）:
-#     30%           -> 現金または保有株の30%（BUY/SELLで意味が変わる）
-#     10 shares/株  -> 株数を直接指定
-#     $150 / 150ドル -> 金額を指定（BUY時はこの金額分、SELL時はこの金額相当株）
-#
-# ※ 仕様が曖昧な箇所は上記の「既定動作」にしています。必要なら後で微調整してください。
-
-
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--ticker", required=True)
@@ -79,7 +58,7 @@ def load_prices(path):
         date_col = "timestamp"  # 新しい列名
 
     df = df.sort_values(by=date_col).reset_index(drop=True)
-    df = df[(df[date_col] >= "2024-01-01") & (df[date_col] <= "2024-12-31")].copy().reset_index(drop=True)
+    df = df[(df[date_col] >= "2024-01-01") & (df[date_col] <= "2024-04-30")].copy().reset_index(drop=True)
 
     exec_col = next((c for c in ["Open", "open", "Close", "close"] if c in df.columns), None)
     value_col = next((c for c in ["Close", "close", "Open", "open"] if c in df.columns), None)
