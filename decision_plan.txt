@@ -1,1 +1,6 @@
-In this simulation, I would aggressively add 10 shares of META. The RSI bounce from oversold, coupled with the overall downward trend, suggests a potential short-term reversal, and I'm willing to increase my position size to capitalize on it. This brings my total holdings to 20 shares.
+ACTION
+HOLD 0 shares of META
+Exact allocation: 25.00% of $1,000 = $250.00 now.
+price_used = 625.4500
+MATH CHECK: shares × price_used = $0.00 ≤ allocation $250.00 — OK.
+WHY: Price exceeds allowable allocation even at cap; cannot afford 1 share under current constraints.

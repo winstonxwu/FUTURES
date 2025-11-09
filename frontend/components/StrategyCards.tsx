@@ -40,6 +40,14 @@ interface Decision {
   recommendation: any;
 }
 
+interface AIDecision {
+  ticker: string;
+  action: string;
+  shares: number;
+  reasoning: string;
+  full_decision: string;
+}
+
 export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) {
   const [selectedStrategy, setSelectedStrategy] = useState<'secure' | 'moderate' | 'aggressive' | null>(null);
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
@@ -47,6 +55,8 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
   const [showModal, setShowModal] = useState(false);
   const [realAvailableCash, setRealAvailableCash] = useState<number | null>(null);
   const [decisionHistory, setDecisionHistory] = useState<Decision[]>([]);
+  const [aiDecisions, setAiDecisions] = useState<{[key: string]: AIDecision}>({});
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const strategyItems: CarouselItem[] = [
     {
@@ -69,6 +79,31 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
     }
   ];
 
+  const fetchAIDecisions = async (stocks: PortfolioStock[], strategy: string) => {
+    setLoadingAI(true);
+    const decisions: {[key: string]: AIDecision} = {};
+
+    try {
+      // Fetch AI decision for each stock
+      for (const stock of stocks) {
+        try {
+          const response = await fetch(`http://localhost:8000/api/ai/decision/${stock.ticker}?strategy=${strategy}`);
+          if (response.ok) {
+            const decision = await response.json();
+            decisions[stock.ticker] = decision;
+          }
+        } catch (error) {
+          console.error(`Error fetching AI decision for ${stock.ticker}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching AI decisions:', error);
+    } finally {
+      setAiDecisions(decisions);
+      setLoadingAI(false);
+    }
+  };
+
   const handleCardClick = async (idx: number) => {
     const strategies: ('secure' | 'moderate' | 'aggressive')[] = ['secure', 'moderate', 'aggressive'];
     const strategy = strategies[idx];
@@ -76,6 +111,7 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
     setSelectedStrategy(strategy);
     setShowModal(true);
     setLoading(true);
+    setAiDecisions({});
 
     // Fetch portfolio data, real available cash, and decision history
     try {
@@ -98,6 +134,11 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
       if (response.ok) {
         const data = await response.json();
         setPortfolioData(data);
+
+        // Fetch AI decisions for each stock in the portfolio
+        if (data.portfolio && data.portfolio.length > 0) {
+          await fetchAIDecisions(data.portfolio, strategy);
+        }
       } else {
         console.error('Failed to fetch portfolio');
         setPortfolioData(null);
@@ -288,8 +329,29 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
                   {/* Portfolio Stocks */}
                   <div className="portfolio-stocks">
                     <h3 className="stocks-header">Current Recommendations</h3>
-                    {portfolioData.portfolio.map((stock, idx) => (
+                    {portfolioData.portfolio.map((stock, idx) => {
+                      const aiDecision = aiDecisions[stock.ticker];
+                      return (
                       <div key={idx} className="stock-card">
+                        {/* AI Decision Section */}
+                        {loadingAI && !aiDecision ? (
+                          <div className="ai-decision-loading">
+                            <div className="spinner-small"></div>
+                            <p>Running AI analysis for {stock.ticker}...</p>
+                          </div>
+                        ) : aiDecision ? (
+                          <div className="ai-decision">
+                            <div className="ai-decision-header">
+                              <span className="ai-label">🤖 AI Decision</span>
+                              <span className={`ai-action ${aiDecision.action.toLowerCase()}`}>
+                                {aiDecision.action}
+                                {aiDecision.shares > 0 && ` ${aiDecision.shares} shares`}
+                              </span>
+                            </div>
+                            <p className="ai-reasoning">{aiDecision.reasoning}</p>
+                          </div>
+                        ) : null}
+
                         <div className="stock-header">
                           <div className="stock-info">
                             <h4 className="stock-ticker">{stock.ticker}</h4>
@@ -331,7 +393,8 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
                           </button>
                         </div>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 </div>
               ) : (
@@ -831,6 +894,77 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
           background: rgba(255, 255, 255, 0.02);
           border-radius: 6px;
           border-left: 3px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* AI Decision Styles */
+        .ai-decision {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
+          border: 2px solid rgba(139, 92, 246, 0.4);
+          border-radius: 12px;
+          padding: 1.25rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .ai-decision-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.75rem;
+        }
+
+        .ai-label {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: rgba(139, 92, 246, 1);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .ai-action {
+          padding: 0.5rem 1.25rem;
+          border-radius: 8px;
+          font-weight: bold;
+          font-size: 1rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .ai-action.buy {
+          background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+          color: white;
+        }
+
+        .ai-action.hold {
+          background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+          color: white;
+        }
+
+        .ai-action.sell {
+          background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+          color: white;
+        }
+
+        .ai-reasoning {
+          font-size: 0.875rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.9);
+          margin: 0;
+        }
+
+        .ai-decision-loading {
+          text-align: center;
+          padding: 2rem;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .spinner-small {
+          width: 30px;
+          height: 30px;
+          border: 3px solid rgba(255, 255, 255, 0.1);
+          border-top-color: rgba(139, 92, 246, 1);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 0.75rem;
         }
       `}</style>
     </>

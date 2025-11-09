@@ -1,2 +1,6 @@
-REDUCE 1 stock of NVDA
-The market bias is bearish and I already hold 3 shares. Given the moderate risk profile, reducing one share aligns with the overall downward trend while still maintaining a position in NVDA.
+ACTION
+HOLD 0 shares of NVDA
+Exact allocation: 12.00% of $60 = $7.20 now.
+price_used = 190.0600
+MATH CHECK: shares × price_used = $0.00 ≤ allocation $7.20 — OK.
+WHY: Price exceeds allowable allocation even at cap; cannot afford 1 share under current constraints.

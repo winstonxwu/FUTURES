@@ -4,6 +4,8 @@ if [ "$#" -ne 4 ]; then
     exit 1
 fi
 
+echo "PWD before running Python:" $(pwd)
+
 pip install -q numpy pandas google-generativeai
 
 today=$(date -v-1d +"%Y-%m-%d")

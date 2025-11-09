@@ -1565,6 +1565,104 @@ async def get_decision_history(strategy: str):
     }
 
 
+@app.get("/api/ai/decision/{ticker}")
+async def get_ai_decision(ticker: str, strategy: str = "moderate"):
+    """
+    Run the AI decision script for a specific ticker and strategy
+
+    Args:
+        ticker: Stock ticker symbol
+        strategy: One of 'secure', 'moderate', or 'aggressive'
+    """
+    import subprocess
+    import os
+
+    ticker = ticker.upper()
+    strategy = strategy.lower()
+
+    # Map strategy to aggressiveness parameter
+    aggressiveness_map = {
+        "secure": "conservative",
+        "moderate": "moderate",
+        "aggressive": "aggressive"
+    }
+    aggressiveness = aggressiveness_map.get(strategy, "moderate")
+
+    # Get current balance and holdings for this ticker
+    available_cash = GLOBAL_PORTFOLIO["available_cash"]
+    current_shares = 0
+    if ticker in GLOBAL_PORTFOLIO["holdings"]:
+        current_shares = GLOBAL_PORTFOLIO["holdings"][ticker]["shares"]
+
+    try:
+        # Run the run.sh script
+        script_path = "/Users/winstonxwu/AI-FUTURES/run.sh"
+        result = subprocess.run(
+            ["bash", script_path, ticker, str(available_cash), str(current_shares), aggressiveness],
+            cwd="/Users/winstonxwu/AI-FUTURES",
+            capture_output=True,
+            text=True,
+            timeout=120  # 2 minute timeout
+        )
+
+        # Read decision_plan.txt
+        decision_file = "/Users/winstonxwu/AI-FUTURES/decision_plan.txt"
+        if os.path.exists(decision_file):
+            with open(decision_file, 'r') as f:
+                content = f.read()
+
+            # Parse the decision
+            lines = content.strip().split('\n')
+            if len(lines) >= 2:
+                action_line = lines[1]  # Second line has the actual decision
+
+                # Extract action (BUY, SELL, or HOLD)
+                action = "HOLD"
+                shares = 0
+                if "BUY" in action_line:
+                    action = "BUY"
+                    # Extract shares number
+                    parts = action_line.split()
+                    if len(parts) >= 2:
+                        try:
+                            shares = int(parts[1])
+                        except:
+                            shares = 0
+                elif "SELL" in action_line:
+                    action = "SELL"
+                    parts = action_line.split()
+                    if len(parts) >= 2:
+                        try:
+                            shares = int(parts[1])
+                        except:
+                            shares = 0
+                elif "HOLD" in action_line:
+                    action = "HOLD"
+
+                # Extract reasoning (WHY line)
+                reasoning = ""
+                for line in lines:
+                    if line.startswith("WHY:"):
+                        reasoning = line.replace("WHY:", "").strip()
+                        break
+
+                return {
+                    "ticker": ticker,
+                    "action": action,
+                    "shares": shares,
+                    "reasoning": reasoning,
+                    "full_decision": content
+                }
+
+        raise HTTPException(status_code=500, detail="Decision file not found or empty")
+
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=408, detail="AI decision took too long to compute")
+    except Exception as e:
+        logger.error(f"Error running AI decision for {ticker}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error computing AI decision: {str(e)}")
+
+
 # AI Stock Recommendations endpoint
 @app.get("/api/ai/recommendations")
 async def get_ai_recommendations(strategy: str = "moderate"):
