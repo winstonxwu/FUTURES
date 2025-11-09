@@ -164,9 +164,43 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
 
     let shares = 0;
 
-    // For BUY and SELL, prompt for number of shares
-    if (action !== 'HOLD') {
-      const sharesInput = prompt(`How many shares of ${ticker} would you like to ${action.toLowerCase()}?`);
+    // For SELL, check current holdings first
+    if (action === 'SELL') {
+      try {
+        const portfolioResponse = await fetch('http://localhost:8000/api/portfolio');
+        if (portfolioResponse.ok) {
+          const portfolioData = await portfolioResponse.json();
+          const holding = portfolioData.holdings.find((h: any) => h.ticker === ticker);
+
+          if (!holding || holding.shares === 0) {
+            alert(`You don't own any shares of ${ticker}`);
+            return;
+          }
+
+          const sharesInput = prompt(`How many shares of ${ticker} would you like to sell?\n\nYou currently own: ${holding.shares} shares`);
+          if (!sharesInput) return;
+
+          shares = parseInt(sharesInput);
+          if (isNaN(shares) || shares <= 0) {
+            alert('Please enter a valid number of shares');
+            return;
+          }
+
+          if (shares > holding.shares) {
+            alert(`You only own ${holding.shares} shares of ${ticker}. Cannot sell ${shares} shares.`);
+            return;
+          }
+        } else {
+          alert('Failed to fetch portfolio holdings');
+          return;
+        }
+      } catch (err) {
+        console.error('Error fetching portfolio:', err);
+        alert('Error checking holdings. Please try again.');
+        return;
+      }
+    } else if (action === 'BUY') {
+      const sharesInput = prompt(`How many shares of ${ticker} would you like to buy?`);
       if (!sharesInput) return;
 
       shares = parseInt(sharesInput);
@@ -177,32 +211,7 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
     }
 
     try {
-      // Record the decision first
-      const decisionResponse = await fetch('http://localhost:8000/api/portfolio/decision', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ticker,
-          action,
-          shares,
-          strategy: selectedStrategy,
-          recommendation: {
-            ticker: stock.ticker,
-            recommendation: stock.recommendation,
-            confidence: stock.confidence,
-            reasoning: stock.reasoning,
-            current_price: stock.current_price
-          }
-        })
-      });
-
-      if (!decisionResponse.ok) {
-        console.error('Failed to record decision');
-      }
-
-      // If it's a trade action (BUY or SELL), execute the trade
+      // Execute the trade action (BUY or SELL)
       if (action !== 'HOLD') {
         const tradeResponse = await fetch('http://localhost:8000/api/portfolio/trade', {
           method: 'POST',
@@ -221,6 +230,9 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
 
         if (tradeResponse.ok) {
           alert(result.message + `\n\nAvailable Cash: $${result.available_cash.toFixed(2)}`);
+
+          // Emit custom event to notify main page to refresh
+          window.dispatchEvent(new CustomEvent('portfolio-updated'));
         } else {
           alert(`Error: ${result.detail || 'Trade failed'}`);
           return;

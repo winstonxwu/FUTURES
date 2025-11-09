@@ -1,0 +1,43 @@
+date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_value,daily_pnl
+2024-08-02,"=== DECISION === ACTION BUY 2312 shares of NVDA Exact allocation: 25.00% of $1,000,000 = $250,000.00 now. price_used = 108.1000 MATH CHECK: shares × price_used = $249,927.20 ≤ allocation $250,000.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T19:53:04)",BUY,2312,shares,106.7,106.73,753309.6,2312,1000069.36,69.36
+2024-08-05,(no decision today),HOLD,0,none,99.97,103.565,753309.6,2312,992751.88,-7317.48
+2024-08-06,(no decision today),HOLD,0,none,104.5,101.55,753309.6,2312,988093.2,-4658.68
+2024-08-07,(no decision today),HOLD,0,none,104.3,97.65,753309.6,2312,979076.4,-9016.8
+2024-08-08,(no decision today),HOLD,0,none,99.14,106.2,753309.6,2312,998844.0,19767.6
+2024-08-09,(no decision today),HOLD,0,none,105.84,104.7698,753309.6,2312,995537.38,-3306.62
+2024-08-12,(no decision today),HOLD,0,none,105.45,108.9239,753309.6,2312,1005141.66,9604.28
+2024-08-13,(no decision today),HOLD,0,none,110.9,116.77,753309.6,2312,1023281.84,18140.18
+2024-08-14,(no decision today),HOLD,0,none,116.9,117.28,753309.6,2312,1024460.96,1179.12
+2024-08-15,"=== DECISION === ACTION SELL 1284 shares of NVDA Exact allocation: 19.99% of $753,310 = $150,587.52 now. price_used = 117.2800 MATH CHECK: shares × price_used = $150,587.52 ≤ allocation $150,587.52 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-08T19:53:08)",SELL,1284,shares,118.1,122.95,904950.0,1028,1031342.6,6881.64
+2024-08-16,(no decision today),HOLD,0,none,123.6,124.23,904950.0,1028,1032658.44,1315.84
+2024-08-19,(no decision today),HOLD,0,none,124.31,129.11,904950.0,1028,1037675.08,5016.64
+2024-08-20,(no decision today),HOLD,0,none,129.75,125.89,904950.0,1028,1034364.92,-3310.16
+2024-08-21,(no decision today),HOLD,0,none,126.59,128.5,904950.0,1028,1037048.0,2683.08
+2024-08-22,(no decision today),HOLD,0,none,128.5,124.53,904950.0,1028,1032966.84,-4081.16
+2024-08-23,(no decision today),HOLD,0,none,125.55,129.45,904950.0,1028,1038024.6,5057.76
+2024-08-26,(no decision today),HOLD,0,none,130.13,126.58,904950.0,1028,1035074.24,-2950.36
+2024-08-27,(no decision today),HOLD,0,none,126.7,127.71,904950.0,1028,1036235.88,1161.64
+2024-08-28,(no decision today),HOLD,0,none,128.18,116.95,904950.0,1028,1025174.6,-11061.28
+2024-08-29,"=== DECISION === ACTION BUY 1934 shares of NVDA Exact allocation: 25.00% of $904,950 = $226,237.50 now. price_used = 116.9500 MATH CHECK: shares × price_used = $226,181.30 ≤ allocation $226,237.50 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T19:53:11)",BUY,1934,shares,120.0,118.49,672870.0,2962,1023837.38,-1337.22
+2024-08-30,(no decision today),HOLD,0,none,119.46,119.23,672870.0,2962,1026029.26,2191.88
+2024-09-03,(no decision today),HOLD,0,none,119.23,105.3916,672870.0,2962,985039.92,-40989.34
+2024-09-04,(no decision today),HOLD,0,none,105.2,106.7,672870.0,2962,988915.4,3875.48
+2024-09-05,(no decision today),HOLD,0,none,107.16,106.35,672870.0,2962,987878.7,-1036.7
+2024-09-06,(no decision today),HOLD,0,none,105.49,102.49,672870.0,2962,976445.38,-11433.32
+2024-09-09,(no decision today),HOLD,0,none,104.89,107.1001,672870.0,2962,990100.5,13655.12
+2024-09-10,(no decision today),HOLD,0,none,106.87,107.6,672870.0,2962,991581.2,1480.7
+2024-09-11,(no decision today),HOLD,0,none,107.9,116.64,672870.0,2962,1018357.68,26776.48
+2024-09-12,(no decision today),HOLD,0,none,117.0,119.119,672870.0,2962,1025700.48,7342.8
+2024-09-13,"=== DECISION === ACTION BUY 1412 shares of NVDA Exact allocation: 25.00% of $672,870 = $168,217.50 now. price_used = 119.1190 MATH CHECK: shares × price_used = $168,196.03 ≤ allocation $168,217.50 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-08T19:53:15)",BUY,1412,shares,118.88,118.76,505011.44,4374,1024467.68,-1232.8
+2024-09-16,(no decision today),HOLD,0,none,118.85,116.458,505011.44,4374,1014398.73,-10068.95
+2024-09-17,(no decision today),HOLD,0,none,117.0,115.4476,505011.44,4374,1009979.24,-4419.49
+2024-09-18,(no decision today),HOLD,0,none,115.84,114.551,505011.44,4374,1006057.51,-3921.73
+2024-09-19,(no decision today),HOLD,0,none,116.56,117.87,505011.44,4374,1020574.82,14517.31
+2024-09-20,(no decision today),HOLD,0,none,118.15,116.07,505011.44,4374,1012701.62,-7873.2
+2024-09-23,(no decision today),HOLD,0,none,116.4,116.1,505011.44,4374,1012832.84,131.22
+2024-09-24,(no decision today),HOLD,0,none,116.6,121.79,505011.44,4374,1037720.9,24888.06
+2024-09-25,(no decision today),HOLD,0,none,120.28,124.6,505011.44,4374,1050011.84,12290.94
+2024-09-26,(no decision today),HOLD,0,none,126.17,123.35,505011.44,4374,1044544.34,-5467.5
+2024-09-27,"=== DECISION === ACTION SELL 818 shares of NVDA Exact allocation: 19.98% of $505,011 = $100,900.30 now. price_used = 123.3500 MATH CHECK: shares × price_used = $100,900.30 ≤ allocation $100,900.30 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-08T19:53:18)",SELL,818,shares,122.52,120.5601,605232.8,3556,1033944.52,-10599.82
+2024-09-30,(no decision today),HOLD,0,none,120.8,121.29,605232.8,3556,1036540.04,2595.52
+2024-10-01,(no decision today),HOLD,0,none,121.52,116.07,605232.8,3556,1017977.72,-18562.32

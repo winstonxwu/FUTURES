@@ -18,6 +18,18 @@ const StrategyCards = dynamic(() => import('@/components/StrategyCards'), {
   loading: () => null
 });
 
+// Dynamically import CapitalManagement
+const CapitalManagement = dynamic(() => import('@/components/CapitalManagement'), {
+  ssr: false,
+  loading: () => null
+});
+
+// Dynamically import PortfolioHoldings
+const PortfolioHoldings = dynamic(() => import('@/components/PortfolioHoldings'), {
+  ssr: false,
+  loading: () => null
+});
+
 export default function DashboardPage() {
   const { user, logout, isAuthenticated } = useAuth();
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -60,9 +72,24 @@ export default function DashboardPage() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 30000); // Reduced from 10s to 30s for better performance
 
-    return () => clearInterval(interval);
+    // Listen for portfolio updates from strategy cards
+    const handlePortfolioUpdate = async () => {
+      try {
+        const healthData = await apiClient.getHealth();
+        setHealth(healthData);
+      } catch (err) {
+        console.error('Failed to refresh health data:', err);
+      }
+    };
+
+    window.addEventListener('portfolio-updated', handlePortfolioUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('portfolio-updated', handlePortfolioUpdate);
+    };
   }, []);
 
   if (loading && !health) {
@@ -120,6 +147,15 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              {/* Capital Management */}
+              <CapitalManagement
+                currentCapital={health?.broker_capital || 0}
+                onCapitalSet={() => {
+                  // Refresh health data
+                  apiClient.getHealth().then(setHealth);
+                }}
+              />
+
               <div className="flex items-center gap-3 px-4 py-2 glass-card rounded-full">
                 <div className={`w-2 h-2 rounded-full ${health?.status === 'healthy' ? 'bg-green-400 pulse-glow' : 'bg-red-400'}`}></div>
                 <span className="text-sm font-medium">{health?.status === 'healthy' ? 'System Online' : 'System Offline'}</span>
@@ -226,6 +262,54 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* Featured: Trading Simulation Banner */}
+        <Link href="/simulation" className="block mb-8 fade-in-up group">
+          <div className="relative overflow-hidden glass-card rounded-3xl p-8 md:p-12 border-2 border-purple-500/30 hover:border-purple-500/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20">
+            {/* Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-blue-600/10 to-purple-600/10 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+
+            {/* Animated Glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+              {/* Icon */}
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
+                  <span className="text-5xl md:text-6xl">🧪</span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-blue-400 transition-all">
+                  Trading Simulation Lab
+                </h2>
+                <p className="text-lg md:text-xl text-gray-300 mb-4">
+                  Run AI-powered backtests on historical 2024 data. Test your strategies with realistic market conditions.
+                </p>
+                <div className="flex items-center gap-4 justify-center md:justify-start">
+                  <span className="px-4 py-2 bg-purple-500/20 rounded-lg text-purple-300 text-sm font-semibold border border-purple-500/30">
+                    📊 Historical Data
+                  </span>
+                  <span className="px-4 py-2 bg-blue-500/20 rounded-lg text-blue-300 text-sm font-semibold border border-blue-500/30">
+                    🤖 AI Analysis
+                  </span>
+                  <span className="px-4 py-2 bg-purple-500/20 rounded-lg text-purple-300 text-sm font-semibold border border-purple-500/30">
+                    📈 Performance Metrics
+                  </span>
+                </div>
+              </div>
+
+              {/* CTA Arrow */}
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-all group-hover:translate-x-2">
+                  <span className="text-2xl">→</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+
         {/* AI Strategy Cards */}
         <div className="mb-8 fade-in-up">
           <div className="glass-card rounded-2xl p-6 md:p-8">
@@ -242,6 +326,11 @@ export default function DashboardPage() {
             </div>
             <StrategyCards />
           </div>
+        </div>
+
+        {/* Portfolio Holdings */}
+        <div className="mb-8 fade-in-up">
+          <PortfolioHoldings />
         </div>
 
         {/* Daily Price Jumps & Dips */}
@@ -351,7 +440,7 @@ export default function DashboardPage() {
             <span className="text-3xl">⚡</span>
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <ActionButton
               href="/trades"
               title="Execute Trade"
@@ -372,6 +461,13 @@ export default function DashboardPage() {
               description="Performance insights"
               icon="📊"
               color="green"
+            />
+            <ActionButton
+              href="/simulation"
+              title="Run Simulation"
+              description="Backtest strategies"
+              icon="🧪"
+              color="purple"
             />
           </div>
         </div>

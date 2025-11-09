@@ -72,6 +72,37 @@ GLOBAL_PORTFOLIO = {
     "decision_history": {}  # {strategy: [{ticker, action, shares, price, timestamp, recommendation}, ...]}
 }
 
+# Price cache to reduce API calls
+PRICE_CACHE = {}
+PRICE_CACHE_TTL = 30  # Cache prices for 30 seconds
+
+def get_cached_price(ticker: str) -> float:
+    """Get price with caching to reduce API calls"""
+    import time
+
+    current_time = time.time()
+
+    # Check if price is in cache and not expired
+    if ticker in PRICE_CACHE:
+        cached_price, cached_time = PRICE_CACHE[ticker]
+        if current_time - cached_time < PRICE_CACHE_TTL:
+            return cached_price
+
+    # Fetch new price
+    try:
+        stock = yf.Ticker(ticker)
+        price = stock.info.get('currentPrice', stock.info.get('regularMarketPrice', 0))
+        if price:
+            PRICE_CACHE[ticker] = (price, current_time)
+            return price
+    except:
+        pass
+
+    # Return cached price even if expired, or 0 if no cache
+    if ticker in PRICE_CACHE:
+        return PRICE_CACHE[ticker][0]
+    return 0
+
 # Well-known companies for the "Big Daily Price Jumps" section
 WELL_KNOWN_COMPANIES = [
     {"ticker": "AAPL", "name": "Apple Inc."},
@@ -972,11 +1003,13 @@ async def root():
 
 @app.get("/health")
 async def health():
+    # Calculate total positions from GLOBAL_PORTFOLIO
+    num_positions = len(GLOBAL_PORTFOLIO["holdings"])
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "broker_capital": MOCK_CAPITAL,
-        "num_positions": len(MOCK_POSITIONS),
+        "broker_capital": GLOBAL_PORTFOLIO["available_cash"],
+        "num_positions": num_positions,
         "num_events": 42,  # Mock event count
     }
 
@@ -984,11 +1017,12 @@ async def health():
 @api_router.get("/health")
 async def api_health():
     """Health endpoint under /api/auth prefix"""
+    num_positions = len(GLOBAL_PORTFOLIO["holdings"])
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "broker_capital": MOCK_CAPITAL,
-        "num_positions": len(MOCK_POSITIONS),
+        "broker_capital": GLOBAL_PORTFOLIO["available_cash"],
+        "num_positions": num_positions,
         "num_events": 42,  # Mock event count
     }
 
@@ -1663,6 +1697,97 @@ async def get_ai_decision(ticker: str, strategy: str = "moderate"):
         raise HTTPException(status_code=500, detail=f"Error computing AI decision: {str(e)}")
 
 
+@app.post("/api/simulation/run")
+async def run_simulation(ticker: str, initial_cash: float = 10000, strategy: str = "moderate"):
+    """
+    Run a trading simulation using experiment.sh
+
+    Args:
+        ticker: Stock ticker symbol
+        initial_cash: Starting cash amount
+        strategy: One of 'secure', 'moderate', or 'aggressive'
+    """
+    import subprocess
+    import os
+    import csv
+
+    ticker = ticker.upper()
+    strategy = strategy.lower()
+
+    # Map strategy to aggressiveness parameter
+    aggressiveness_map = {
+        "secure": "conservative",
+        "moderate": "moderate",
+        "aggressive": "aggressive"
+    }
+    aggressiveness = aggressiveness_map.get(strategy, "moderate")
+
+    try:
+        # Run the experiment.sh script
+        script_path = "/Users/winstonxwu/AI-FUTURES/experiment.sh"
+        result = subprocess.run(
+            ["bash", script_path, ticker, str(int(initial_cash)), aggressiveness],
+            cwd="/Users/winstonxwu/AI-FUTURES",
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+
+        if result.returncode != 0:
+            logger.error(f"Experiment failed: {result.stderr}")
+            raise HTTPException(status_code=500, detail=f"Simulation failed: {result.stderr}")
+
+        # Read the simulation log CSV
+        csv_path = f"/Users/winstonxwu/AI-FUTURES/data/simulation_log_{ticker}_2024.csv"
+        if not os.path.exists(csv_path):
+            raise HTTPException(status_code=500, detail="Simulation log not found")
+
+        # Parse CSV and return data
+        simulation_data = []
+        with open(csv_path, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                simulation_data.append({
+                    "date": row["date"],
+                    "action": row["action"],
+                    "qty": int(row["qty"]) if row["qty"] else 0,
+                    "exec_price": float(row["exec_price"]) if row["exec_price"] else 0,
+                    "close_price": float(row["close_price"]) if row["close_price"] else 0,
+                    "cash": float(row["cash"]),
+                    "shares": int(row["shares"]),
+                    "portfolio_value": float(row["portfolio_value"]),
+                    "daily_pnl": float(row["daily_pnl"])
+                })
+
+        # Calculate summary statistics
+        if simulation_data:
+            initial_value = initial_cash
+            final_value = simulation_data[-1]["portfolio_value"]
+            total_return = final_value - initial_value
+            total_return_pct = (total_return / initial_value) * 100
+
+            num_trades = sum(1 for d in simulation_data if d["action"] in ["BUY", "SELL"])
+
+            return {
+                "ticker": ticker,
+                "strategy": strategy,
+                "initial_cash": initial_cash,
+                "final_value": final_value,
+                "total_return": total_return,
+                "total_return_pct": total_return_pct,
+                "num_trades": num_trades,
+                "simulation_data": simulation_data
+            }
+        else:
+            raise HTTPException(status_code=500, detail="No simulation data found")
+
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=408, detail="Simulation took too long to complete")
+    except Exception as e:
+        logger.error(f"Error running simulation for {ticker}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running simulation: {str(e)}")
+
+
 # AI Stock Recommendations endpoint
 @app.get("/api/ai/recommendations")
 async def get_ai_recommendations(strategy: str = "moderate"):
@@ -1762,6 +1887,214 @@ async def get_ai_recommendations(strategy: str = "moderate"):
     }
 
 
+# Virtual Portfolio Management Endpoints
+
+class CapitalRequest(BaseModel):
+    amount: float
+
+class TradeRequest(BaseModel):
+    ticker: str
+    action: str  # "BUY" or "SELL"
+    shares: int
+    strategy: str  # "secure", "moderate", or "aggressive"
+
+@app.get("/api/portfolio")
+async def get_portfolio():
+    """Get current portfolio state"""
+    # Calculate total portfolio value
+    total_value = GLOBAL_PORTFOLIO["available_cash"]
+    holdings_value = 0.0
+    holdings_list = []
+
+    for ticker, holding in GLOBAL_PORTFOLIO["holdings"].items():
+        # Get current price with caching
+        current_price = get_cached_price(ticker)
+        if current_price == 0:
+            current_price = holding["avg_price"]
+
+        holding_value = holding["shares"] * current_price
+        holdings_value += holding_value
+        pnl = (current_price - holding["avg_price"]) * holding["shares"]
+        pnl_pct = ((current_price - holding["avg_price"]) / holding["avg_price"]) * 100 if holding["avg_price"] > 0 else 0
+
+        holdings_list.append({
+            "ticker": ticker,
+            "shares": holding["shares"],
+            "avg_price": holding["avg_price"],
+            "current_price": current_price,
+            "value": holding_value,
+            "pnl": pnl,
+            "pnl_pct": pnl_pct,
+            "strategy": holding.get("strategy", "unknown")
+        })
+
+    total_value += holdings_value
+    total_pnl = total_value - GLOBAL_PORTFOLIO["starting_balance"]
+    total_pnl_pct = (total_pnl / GLOBAL_PORTFOLIO["starting_balance"]) * 100 if GLOBAL_PORTFOLIO["starting_balance"] > 0 else 0
+
+    return {
+        "starting_balance": GLOBAL_PORTFOLIO["starting_balance"],
+        "available_cash": GLOBAL_PORTFOLIO["available_cash"],
+        "holdings_value": holdings_value,
+        "total_value": total_value,
+        "total_pnl": total_pnl,
+        "total_pnl_pct": total_pnl_pct,
+        "holdings": holdings_list,
+        "trade_history": GLOBAL_PORTFOLIO["trade_history"][-20:],  # Last 20 trades
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.post("/api/portfolio/set-capital")
+async def set_capital(request: CapitalRequest):
+    """Set or reset available capital (virtual money)"""
+    if request.amount < 0:
+        raise HTTPException(status_code=400, detail="Capital amount must be positive")
+
+    # Reset portfolio
+    GLOBAL_PORTFOLIO["starting_balance"] = request.amount
+    GLOBAL_PORTFOLIO["available_cash"] = request.amount
+    GLOBAL_PORTFOLIO["holdings"] = {}
+    GLOBAL_PORTFOLIO["trade_history"] = []
+    GLOBAL_PORTFOLIO["decision_history"] = {}
+
+    logger.info(f"Portfolio reset with capital: ${request.amount:,.2f}")
+
+    return {
+        "success": True,
+        "message": f"Portfolio reset with ${request.amount:,.2f}",
+        "starting_balance": request.amount,
+        "available_cash": request.amount
+    }
+
+
+@app.post("/api/portfolio/trade")
+async def execute_trade(request: TradeRequest):
+    """Execute a buy or sell trade"""
+    ticker = request.ticker.upper()
+    action = request.action.upper()
+    shares = request.shares
+    strategy = request.strategy.lower()
+
+    if shares <= 0:
+        raise HTTPException(status_code=400, detail="Shares must be positive")
+
+    if action not in ["BUY", "SELL"]:
+        raise HTTPException(status_code=400, detail="Action must be BUY or SELL")
+
+    # Get current price with caching
+    current_price = get_cached_price(ticker)
+    if current_price == 0:
+        logger.error(f"Error fetching price for {ticker}")
+        raise HTTPException(status_code=400, detail=f"Could not fetch price for {ticker}")
+
+    if action == "BUY":
+        # Calculate total cost
+        total_cost = shares * current_price
+
+        # Check if enough cash available
+        if total_cost > GLOBAL_PORTFOLIO["available_cash"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient funds. Need ${total_cost:,.2f}, have ${GLOBAL_PORTFOLIO['available_cash']:,.2f}"
+            )
+
+        # Execute buy
+        GLOBAL_PORTFOLIO["available_cash"] -= total_cost
+
+        if ticker in GLOBAL_PORTFOLIO["holdings"]:
+            # Update existing position (weighted average price)
+            holding = GLOBAL_PORTFOLIO["holdings"][ticker]
+            total_shares = holding["shares"] + shares
+            total_value = (holding["shares"] * holding["avg_price"]) + (shares * current_price)
+            new_avg_price = total_value / total_shares
+
+            GLOBAL_PORTFOLIO["holdings"][ticker] = {
+                "shares": total_shares,
+                "avg_price": new_avg_price,
+                "strategy": strategy
+            }
+        else:
+            # Create new position
+            GLOBAL_PORTFOLIO["holdings"][ticker] = {
+                "shares": shares,
+                "avg_price": current_price,
+                "strategy": strategy
+            }
+
+        # Record trade
+        trade_record = {
+            "timestamp": datetime.now().isoformat(),
+            "action": "BUY",
+            "ticker": ticker,
+            "shares": shares,
+            "price": current_price,
+            "total": total_cost,
+            "strategy": strategy
+        }
+        GLOBAL_PORTFOLIO["trade_history"].append(trade_record)
+
+        logger.info(f"BUY {shares} shares of {ticker} at ${current_price:.2f} ({strategy} strategy)")
+
+        return {
+            "success": True,
+            "message": f"Bought {shares} shares of {ticker} at ${current_price:.2f}",
+            "trade": trade_record,
+            "available_cash": GLOBAL_PORTFOLIO["available_cash"],
+            "holding": GLOBAL_PORTFOLIO["holdings"][ticker]
+        }
+
+    elif action == "SELL":
+        # Check if we own the stock
+        if ticker not in GLOBAL_PORTFOLIO["holdings"]:
+            raise HTTPException(status_code=400, detail=f"You don't own any shares of {ticker}")
+
+        holding = GLOBAL_PORTFOLIO["holdings"][ticker]
+
+        # Check if we have enough shares
+        if shares > holding["shares"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient shares. Trying to sell {shares}, but only own {holding['shares']}"
+            )
+
+        # Execute sell
+        total_proceeds = shares * current_price
+        GLOBAL_PORTFOLIO["available_cash"] += total_proceeds
+
+        # Update or remove position
+        if shares == holding["shares"]:
+            # Selling all shares
+            del GLOBAL_PORTFOLIO["holdings"][ticker]
+        else:
+            # Selling partial shares
+            GLOBAL_PORTFOLIO["holdings"][ticker]["shares"] -= shares
+
+        # Record trade
+        pnl = (current_price - holding["avg_price"]) * shares
+        trade_record = {
+            "timestamp": datetime.now().isoformat(),
+            "action": "SELL",
+            "ticker": ticker,
+            "shares": shares,
+            "price": current_price,
+            "total": total_proceeds,
+            "pnl": pnl,
+            "strategy": strategy
+        }
+        GLOBAL_PORTFOLIO["trade_history"].append(trade_record)
+
+        logger.info(f"SELL {shares} shares of {ticker} at ${current_price:.2f} (P&L: ${pnl:,.2f})")
+
+        return {
+            "success": True,
+            "message": f"Sold {shares} shares of {ticker} at ${current_price:.2f}",
+            "trade": trade_record,
+            "available_cash": GLOBAL_PORTFOLIO["available_cash"],
+            "pnl": pnl
+        }
+
+
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on server shutdown"""
@@ -1771,7 +2104,7 @@ async def shutdown_event():
             logger.info("Massive API client closed")
         except Exception as e:
             logger.error(f"Error closing Massive API client: {e}")
-    
+
     if FINNHUB_AVAILABLE:
         try:
             close_finnhub_client()
