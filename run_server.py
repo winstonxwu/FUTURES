@@ -711,23 +711,21 @@ async def api_get_big_movers():
 
 # Market News endpoints
 async def _get_market_news(limit: int = 20, category: str = "general"):
-    """Get market news from Finnhub API or fallback to mock data"""
-    if FINNHUB_AVAILABLE:
+    """Get market news from Massive API or fallback to mock data"""
+    if MASSIVE_AVAILABLE:
         try:
-            logger.info(f"Fetching market news from Finnhub API (category: {category}, limit: {limit})...")
-            # Finnhub client is synchronous, so we run it in executor
-            import asyncio
-            loop = asyncio.get_event_loop()
-            news_data = await loop.run_in_executor(None, finnhub_api.get_market_news, limit, category)
+            logger.info(f"Fetching market news from Massive API (limit: {limit})...")
+            massive_client = get_massive_client()
+            news_data = await massive_client.get_market_news(limit=limit)
             if news_data and news_data.get("news"):
-                logger.info(f"✅ Successfully fetched {len(news_data['news'])} news items from Finnhub")
+                logger.info(f"✅ Successfully fetched {len(news_data['news'])} news items from Massive API")
                 return news_data
         except Exception as e:
-            logger.error(f"Error fetching news from Finnhub API: {e}")
+            logger.error(f"Error fetching news from Massive API: {e}")
             # Fall through to mock data
-    
+
     # Fallback to mock data
-    logger.info("Using mock news data (Finnhub API unavailable or failed)")
+    logger.info("Using mock news data (Massive API unavailable or failed)")
     return _get_mock_news(limit)
 
 

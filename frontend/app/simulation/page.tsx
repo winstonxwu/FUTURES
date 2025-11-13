@@ -260,9 +260,9 @@ export default function SimulationPage() {
                   onChange={(e) => setStrategy(e.target.value as 'secure' | 'moderate' | 'aggressive')}
                   className="w-full px-4 py-3 bg-[var(--background-secondary)] border-2 border-[var(--border-color)] rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all"
                 >
-                  <option value="secure">🛡️ Secure</option>
-                  <option value="moderate">⚖️ Moderate</option>
-                  <option value="aggressive">🚀 Aggressive</option>
+                  <option value="secure">Secure</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="aggressive">Aggressive</option>
                 </select>
               </div>
             </div>
@@ -278,7 +278,7 @@ export default function SimulationPage() {
                   Running Simulation...
                 </span>
               ) : (
-                '🎯 Run Simulation'
+                'Run Simulation'
               )}
             </button>
           </form>
@@ -325,7 +325,6 @@ export default function SimulationPage() {
         {error && (
           <div className="glass-card rounded-2xl p-6 mb-8 bg-red-500/10 border-2 border-red-500/50">
             <div className="flex items-start gap-3">
-              <div className="text-2xl">⚠️</div>
               <div className="flex-1">
                 <p className="text-red-400 font-bold text-lg mb-1">Simulation Failed</p>
                 <p className="text-red-300">{error}</p>

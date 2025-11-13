@@ -1,84 +1,84 @@
 date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_value,daily_pnl
-2024-01-03,"=== DECISION === ACTION BUY 59 shares of GLW Exact allocation: 18.00% of $10,000 = $1,800.00 now. price_used = 30.3500 MATH CHECK: shares × price_used = $1,790.65 ≤ allocation $1,800.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:06)",BUY,59,shares,30.49,30.2,8201.09,59,9982.89,-17.11
-2024-01-04,(no decision today),HOLD,0,none,30.11,30.4,8201.09,59,9994.69,11.8
-2024-01-05,(no decision today),HOLD,0,none,30.2,30.57,8201.09,59,10004.72,10.03
-2024-01-08,(no decision today),HOLD,0,none,30.55,31.32,8201.09,59,10048.97,44.25
-2024-01-09,(no decision today),HOLD,0,none,31.34,30.59,8201.09,59,10005.9,-43.07
-2024-01-10,(no decision today),HOLD,0,none,30.5,30.69,8201.09,59,10011.8,5.9
-2024-01-11,(no decision today),HOLD,0,none,30.6,30.74,8201.09,59,10014.75,2.95
-2024-01-12,(no decision today),HOLD,0,none,30.479,30.5,8201.09,59,10000.59,-14.16
-2024-01-16,(no decision today),HOLD,0,none,30.4,30.22,8201.09,59,9984.07,-16.52
-2024-01-17,"=== DECISION === ACTION BUY 48 shares of GLW Exact allocation: 18.00% of $8,201 = $1,476.20 now. price_used = 30.2200 MATH CHECK: shares × price_used = $1,450.56 ≤ allocation $1,476.20 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:09)",BUY,48,shares,29.9,29.81,6765.89,107,9955.56,-28.51
-2024-01-18,(no decision today),HOLD,0,none,30.12,30.16,6765.89,107,9993.01,37.45
-2024-01-19,(no decision today),HOLD,0,none,30.07,30.5,6765.89,107,10029.39,36.38
-2024-01-22,(no decision today),HOLD,0,none,30.58,30.76,6765.89,107,10057.21,27.82
-2024-01-23,(no decision today),HOLD,0,none,30.71,30.33,6765.89,107,10011.2,-46.01
-2024-01-24,(no decision today),HOLD,0,none,30.35,30.37,6765.89,107,10015.48,4.28
-2024-01-25,(no decision today),HOLD,0,none,30.66,30.82,6765.89,107,10063.63,48.15
-2024-01-26,(no decision today),HOLD,0,none,30.81,30.86,6765.89,107,10067.91,4.28
-2024-01-27,(no decision today),HOLD,0,none,30.86,30.86,6765.89,107,10067.91,0.0
-2024-01-29,(no decision today),HOLD,0,none,30.71,31.18,6765.89,107,10102.15,34.24
-2024-01-30,"=== DECISION === ACTION BUY 39 shares of GLW Exact allocation: 18.00% of $6,766 = $1,217.86 now. price_used = 31.1800 MATH CHECK: shares × price_used = $1,216.02 ≤ allocation $1,217.86 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:12)",BUY,39,shares,31.1499,33.3,5551.04,146,10412.84,310.69
-2024-01-31,(no decision today),HOLD,0,none,33.49,32.03,5551.04,146,10227.42,-185.42
-2024-02-01,(no decision today),HOLD,0,none,32.42,32.24,5551.04,146,10258.08,30.66
-2024-02-02,(no decision today),HOLD,0,none,32.0,32.25,5551.04,146,10259.54,1.46
-2024-02-05,(no decision today),HOLD,0,none,32.01,32.01,5551.04,146,10224.5,-35.04
-2024-02-06,(no decision today),HOLD,0,none,32.11,32.04,5551.04,146,10228.88,4.38
-2024-02-07,(no decision today),HOLD,0,none,32.15,31.79,5551.04,146,10192.38,-36.5
-2024-02-08,(no decision today),HOLD,0,none,31.81,31.73,5551.04,146,10183.62,-8.76
-2024-02-09,(no decision today),HOLD,0,none,31.8799,31.97,5551.04,146,10218.66,35.04
-2024-02-12,(no decision today),HOLD,0,none,32.25,32.125,5551.04,146,10241.29,22.63
-2024-02-13,"=== DECISION === ACTION BUY 31 shares of GLW Exact allocation: 18.00% of $5,551 = $999.19 now. price_used = 32.1250 MATH CHECK: shares × price_used = $995.88 ≤ allocation $999.19 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:15)",BUY,31,shares,32.25,31.28,4551.29,177,10087.85,-153.44
-2024-02-14,(no decision today),HOLD,0,none,31.59,31.75,4551.29,177,10171.04,83.19
-2024-02-15,(no decision today),HOLD,0,none,31.81,32.03,4551.29,177,10220.6,49.56
-2024-02-16,(no decision today),HOLD,0,none,31.7,31.7,4551.29,177,10162.19,-58.41
-2024-02-20,(no decision today),HOLD,0,none,31.66,32.29,4551.29,177,10266.62,104.43
-2024-02-21,(no decision today),HOLD,0,none,32.1,32.25,4551.29,177,10259.54,-7.08
-2024-02-22,(no decision today),HOLD,0,none,32.24,32.58,4551.29,177,10317.95,58.41
-2024-02-23,(no decision today),HOLD,0,none,32.61,32.61,4551.29,177,10323.26,5.31
-2024-02-26,(no decision today),HOLD,0,none,32.69,32.51,4551.29,177,10305.56,-17.7
-2024-02-27,(no decision today),HOLD,0,none,32.9713,32.15,4551.29,177,10241.84,-63.72
-2024-02-28,"=== DECISION === ACTION BUY 25 shares of GLW Exact allocation: 18.00% of $4,551 = $819.23 now. price_used = 32.1500 MATH CHECK: shares × price_used = $803.75 ≤ allocation $819.23 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:18)",BUY,25,shares,32.15,32.09,3747.54,202,10229.72,-12.12
-2024-02-29,(no decision today),HOLD,0,none,32.25,32.23,3747.54,202,10258.0,28.28
-2024-03-01,(no decision today),HOLD,0,none,32.32,32.45,3747.54,202,10302.44,44.44
-2024-03-04,(no decision today),HOLD,0,none,32.18,33.25,3747.54,202,10464.04,161.6
-2024-03-05,(no decision today),HOLD,0,none,33.2,32.5,3747.54,202,10312.54,-151.5
-2024-03-06,(no decision today),HOLD,0,none,32.5,32.75,3747.54,202,10363.04,50.5
-2024-03-07,(no decision today),HOLD,0,none,32.86,31.82,3747.54,202,10175.18,-187.86
-2024-03-08,(no decision today),HOLD,0,none,32.73,32.71,3747.54,202,10354.96,179.78
-2024-03-11,(no decision today),HOLD,0,none,32.62,32.58,3747.54,202,10328.7,-26.26
-2024-03-12,(no decision today),HOLD,0,none,32.95,32.89,3747.54,202,10391.32,62.62
-2024-03-13,"=== DECISION === ACTION BUY 20 shares of GLW Exact allocation: 18.00% of $3,748 = $674.56 now. price_used = 32.8900 MATH CHECK: shares × price_used = $657.80 ≤ allocation $674.56 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:21)",BUY,20,shares,33.09,32.73,3085.74,222,10351.8,-39.52
-2024-03-14,(no decision today),HOLD,0,none,32.73,32.5,3085.74,222,10300.74,-51.06
-2024-03-15,(no decision today),HOLD,0,none,32.54,32.51,3085.74,222,10302.96,2.22
-2024-03-18,(no decision today),HOLD,0,none,32.5,32.33,3085.74,222,10263.0,-39.96
-2024-03-19,(no decision today),HOLD,0,none,32.36,32.55,3085.74,222,10311.84,48.84
-2024-03-20,(no decision today),HOLD,0,none,32.27,32.67,3085.74,222,10338.48,26.64
-2024-03-21,(no decision today),HOLD,0,none,32.87,33.2,3085.74,222,10456.14,117.66
-2024-03-22,(no decision today),HOLD,0,none,32.85,32.57,3085.74,222,10316.28,-139.86
-2024-03-25,(no decision today),HOLD,0,none,32.51,32.47,3085.74,222,10294.08,-22.2
-2024-03-26,(no decision today),HOLD,0,none,32.6,32.1708,3085.74,222,10227.66,-66.42
-2024-03-27,"=== DECISION === ACTION BUY 17 shares of GLW Exact allocation: 18.00% of $3,086 = $555.43 now. price_used = 32.1708 MATH CHECK: shares × price_used = $546.90 ≤ allocation $555.43 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:24)",BUY,17,shares,32.41,33.09,2534.77,239,10443.28,215.62
-2024-03-28,(no decision today),HOLD,0,none,32.97,32.75,2534.77,239,10362.02,-81.26
-2024-04-01,(no decision today),HOLD,0,none,33.0,32.73,2534.77,239,10357.24,-4.78
-2024-04-02,(no decision today),HOLD,0,none,32.51,32.68,2534.77,239,10345.29,-11.95
-2024-04-03,(no decision today),HOLD,0,none,32.49,32.57,2534.77,239,10319.0,-26.29
-2024-04-04,(no decision today),HOLD,0,none,32.6,32.36,2534.77,239,10268.81,-50.19
-2024-04-05,(no decision today),HOLD,0,none,32.31,32.54,2534.77,239,10311.83,43.02
-2024-04-08,(no decision today),HOLD,0,none,32.75,32.19,2534.77,239,10228.18,-83.65
-2024-04-09,(no decision today),HOLD,0,none,32.15,32.55,2534.77,239,10314.22,86.04
-2024-04-10,(no decision today),HOLD,0,none,32.08,31.93,2534.77,239,10166.04,-148.18
-2024-04-11,"=== DECISION === ACTION BUY 14 shares of GLW Exact allocation: 18.00% of $2,535 = $456.26 now. price_used = 31.9300 MATH CHECK: shares × price_used = $447.02 ≤ allocation $456.26 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:27)",BUY,14,shares,32.01,32.32,2086.63,253,10263.59,97.55
-2024-04-12,(no decision today),HOLD,0,none,31.92,31.49,2086.63,253,10053.6,-209.99
-2024-04-15,(no decision today),HOLD,0,none,31.83,31.29,2086.63,253,10003.0,-50.6
-2024-04-16,(no decision today),HOLD,0,none,31.21,30.92,2086.63,253,9909.39,-93.61
-2024-04-17,(no decision today),HOLD,0,none,30.94,30.98,2086.63,253,9924.57,15.18
-2024-04-18,(no decision today),HOLD,0,none,31.18,30.8,2086.63,253,9879.03,-45.54
-2024-04-19,(no decision today),HOLD,0,none,30.91,31.27,2086.63,253,9997.94,118.91
-2024-04-22,(no decision today),HOLD,0,none,31.77,31.55,2086.63,253,10068.78,70.84
-2024-04-23,(no decision today),HOLD,0,none,31.5,31.53,2086.63,253,10063.72,-5.06
-2024-04-24,(no decision today),HOLD,0,none,31.54,31.52,2086.63,253,10061.19,-2.53
-2024-04-25,"=== DECISION === ACTION BUY 11 shares of GLW Exact allocation: 18.00% of $2,087 = $375.59 now. price_used = 31.5200 MATH CHECK: shares × price_used = $346.72 ≤ allocation $375.59 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T01:33:30)",BUY,11,shares,31.52,31.69,1739.91,264,10106.07,44.88
-2024-04-26,(no decision today),HOLD,0,none,31.32,31.33,1739.91,264,10011.03,-95.04
-2024-04-29,(no decision today),HOLD,0,none,31.37,31.79,1739.91,264,10132.47,121.44
-2024-04-30,(no decision today),HOLD,0,none,31.87,33.1131,1739.91,264,10481.77,349.3
+2024-01-03,"=== DECISION === ACTION BUY 82 shares of GLW Exact allocation: 25.00% of $10,000 = $2,500.00 now. price_used = 30.3500 MATH CHECK: shares × price_used = $2,488.70 ≤ allocation $2,500.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:07:02)",BUY,82,shares,30.49,30.2,7499.82,82,9976.22,-23.78
+2024-01-04,(no decision today),HOLD,0,none,30.11,30.4,7499.82,82,9992.62,16.4
+2024-01-05,(no decision today),HOLD,0,none,30.2,30.57,7499.82,82,10006.56,13.94
+2024-01-08,(no decision today),HOLD,0,none,30.55,31.32,7499.82,82,10068.06,61.5
+2024-01-09,(no decision today),HOLD,0,none,31.34,30.59,7499.82,82,10008.2,-59.86
+2024-01-10,(no decision today),HOLD,0,none,30.5,30.69,7499.82,82,10016.4,8.2
+2024-01-11,(no decision today),HOLD,0,none,30.6,30.74,7499.82,82,10020.5,4.1
+2024-01-12,(no decision today),HOLD,0,none,30.479,30.5,7499.82,82,10000.82,-19.68
+2024-01-16,(no decision today),HOLD,0,none,30.4,30.22,7499.82,82,9977.86,-22.96
+2024-01-17,"=== DECISION === ACTION BUY 62 shares of GLW Exact allocation: 25.00% of $7,500 = $1,874.95 now. price_used = 30.2200 MATH CHECK: shares × price_used = $1,873.64 ≤ allocation $1,874.95 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:07:06)",BUY,62,shares,29.9,29.81,5646.02,144,9938.66,-39.2
+2024-01-18,(no decision today),HOLD,0,none,30.12,30.16,5646.02,144,9989.06,50.4
+2024-01-19,(no decision today),HOLD,0,none,30.07,30.5,5646.02,144,10038.02,48.96
+2024-01-22,(no decision today),HOLD,0,none,30.58,30.76,5646.02,144,10075.46,37.44
+2024-01-23,(no decision today),HOLD,0,none,30.71,30.33,5646.02,144,10013.54,-61.92
+2024-01-24,(no decision today),HOLD,0,none,30.35,30.37,5646.02,144,10019.3,5.76
+2024-01-25,(no decision today),HOLD,0,none,30.66,30.82,5646.02,144,10084.1,64.8
+2024-01-26,(no decision today),HOLD,0,none,30.81,30.86,5646.02,144,10089.86,5.76
+2024-01-27,(no decision today),HOLD,0,none,30.86,30.86,5646.02,144,10089.86,0.0
+2024-01-29,(no decision today),HOLD,0,none,30.71,31.18,5646.02,144,10135.94,46.08
+2024-01-30,"=== DECISION === ACTION BUY 45 shares of GLW Exact allocation: 25.00% of $5,646 = $1,411.51 now. price_used = 31.1800 MATH CHECK: shares × price_used = $1,403.10 ≤ allocation $1,411.51 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:07:10)",BUY,45,shares,31.1499,33.3,4244.27,189,10537.97,402.03
+2024-01-31,(no decision today),HOLD,0,none,33.49,32.03,4244.27,189,10297.94,-240.03
+2024-02-01,(no decision today),HOLD,0,none,32.42,32.24,4244.27,189,10337.63,39.69
+2024-02-02,(no decision today),HOLD,0,none,32.0,32.25,4244.27,189,10339.52,1.89
+2024-02-05,(no decision today),HOLD,0,none,32.01,32.01,4244.27,189,10294.16,-45.36
+2024-02-06,(no decision today),HOLD,0,none,32.11,32.04,4244.27,189,10299.83,5.67
+2024-02-07,(no decision today),HOLD,0,none,32.15,31.79,4244.27,189,10252.58,-47.25
+2024-02-08,(no decision today),HOLD,0,none,31.81,31.73,4244.27,189,10241.24,-11.34
+2024-02-09,(no decision today),HOLD,0,none,31.8799,31.97,4244.27,189,10286.6,45.36
+2024-02-12,(no decision today),HOLD,0,none,32.25,32.125,4244.27,189,10315.9,29.3
+2024-02-13,"=== DECISION === ACTION BUY 33 shares of GLW Exact allocation: 25.00% of $4,244 = $1,061.07 now. price_used = 32.1250 MATH CHECK: shares × price_used = $1,060.12 ≤ allocation $1,061.07 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:07:14)",BUY,33,shares,32.25,31.28,3180.02,222,10124.18,-191.72
+2024-02-14,(no decision today),HOLD,0,none,31.59,31.75,3180.02,222,10228.52,104.34
+2024-02-15,(no decision today),HOLD,0,none,31.81,32.03,3180.02,222,10290.68,62.16
+2024-02-16,(no decision today),HOLD,0,none,31.7,31.7,3180.02,222,10217.42,-73.26
+2024-02-20,(no decision today),HOLD,0,none,31.66,32.29,3180.02,222,10348.4,130.98
+2024-02-21,(no decision today),HOLD,0,none,32.1,32.25,3180.02,222,10339.52,-8.88
+2024-02-22,(no decision today),HOLD,0,none,32.24,32.58,3180.02,222,10412.78,73.26
+2024-02-23,(no decision today),HOLD,0,none,32.61,32.61,3180.02,222,10419.44,6.66
+2024-02-26,(no decision today),HOLD,0,none,32.69,32.51,3180.02,222,10397.24,-22.2
+2024-02-27,(no decision today),HOLD,0,none,32.9713,32.15,3180.02,222,10317.32,-79.92
+2024-02-28,"=== DECISION === ACTION BUY 24 shares of GLW Exact allocation: 25.00% of $3,180 = $795.00 now. price_used = 32.1500 MATH CHECK: shares × price_used = $771.60 ≤ allocation $795.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:07:18)",BUY,24,shares,32.15,32.09,2408.42,246,10302.56,-14.76
+2024-02-29,(no decision today),HOLD,0,none,32.25,32.23,2408.42,246,10337.0,34.44
+2024-03-01,(no decision today),HOLD,0,none,32.32,32.45,2408.42,246,10391.12,54.12
+2024-03-04,(no decision today),HOLD,0,none,32.18,33.25,2408.42,246,10587.92,196.8
+2024-03-05,(no decision today),HOLD,0,none,33.2,32.5,2408.42,246,10403.42,-184.5
+2024-03-06,(no decision today),HOLD,0,none,32.5,32.75,2408.42,246,10464.92,61.5
+2024-03-07,(no decision today),HOLD,0,none,32.86,31.82,2408.42,246,10236.14,-228.78
+2024-03-08,(no decision today),HOLD,0,none,32.73,32.71,2408.42,246,10455.08,218.94
+2024-03-11,(no decision today),HOLD,0,none,32.62,32.58,2408.42,246,10423.1,-31.98
+2024-03-12,(no decision today),HOLD,0,none,32.95,32.89,2408.42,246,10499.36,76.26
+2024-03-13,"=== DECISION === ACTION BUY 18 shares of GLW Exact allocation: 25.00% of $2,408 = $602.11 now. price_used = 32.8900 MATH CHECK: shares × price_used = $592.02 ≤ allocation $602.11 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:07:21)",BUY,18,shares,33.09,32.73,1812.8,264,10453.52,-45.84
+2024-03-14,(no decision today),HOLD,0,none,32.73,32.5,1812.8,264,10392.8,-60.72
+2024-03-15,(no decision today),HOLD,0,none,32.54,32.51,1812.8,264,10395.44,2.64
+2024-03-18,(no decision today),HOLD,0,none,32.5,32.33,1812.8,264,10347.92,-47.52
+2024-03-19,(no decision today),HOLD,0,none,32.36,32.55,1812.8,264,10406.0,58.08
+2024-03-20,(no decision today),HOLD,0,none,32.27,32.67,1812.8,264,10437.68,31.68
+2024-03-21,(no decision today),HOLD,0,none,32.87,33.2,1812.8,264,10577.6,139.92
+2024-03-22,(no decision today),HOLD,0,none,32.85,32.57,1812.8,264,10411.28,-166.32
+2024-03-25,(no decision today),HOLD,0,none,32.51,32.47,1812.8,264,10384.88,-26.4
+2024-03-26,(no decision today),HOLD,0,none,32.6,32.1708,1812.8,264,10305.9,-78.99
+2024-03-27,"=== DECISION === ACTION SELL 11 shares of GLW Exact allocation: 19.52% of $1,813 = $353.88 now. price_used = 32.1708 MATH CHECK: shares × price_used = $353.88 ≤ allocation $353.88 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:07:25)",SELL,11,shares,32.41,33.09,2169.31,253,10541.08,235.19
+2024-03-28,(no decision today),HOLD,0,none,32.97,32.75,2169.31,253,10455.06,-86.02
+2024-04-01,(no decision today),HOLD,0,none,33.0,32.73,2169.31,253,10450.0,-5.06
+2024-04-02,(no decision today),HOLD,0,none,32.51,32.68,2169.31,253,10437.35,-12.65
+2024-04-03,(no decision today),HOLD,0,none,32.49,32.57,2169.31,253,10409.52,-27.83
+2024-04-04,(no decision today),HOLD,0,none,32.6,32.36,2169.31,253,10356.39,-53.13
+2024-04-05,(no decision today),HOLD,0,none,32.31,32.54,2169.31,253,10401.93,45.54
+2024-04-08,(no decision today),HOLD,0,none,32.75,32.19,2169.31,253,10313.38,-88.55
+2024-04-09,(no decision today),HOLD,0,none,32.15,32.55,2169.31,253,10404.46,91.08
+2024-04-10,(no decision today),HOLD,0,none,32.08,31.93,2169.31,253,10247.6,-156.86
+2024-04-11,"=== DECISION === ACTION SELL 13 shares of GLW Exact allocation: 19.13% of $2,169 = $415.09 now. price_used = 31.9300 MATH CHECK: shares × price_used = $415.09 ≤ allocation $415.09 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:07:29)",SELL,13,shares,32.01,32.32,2585.44,240,10342.24,94.64
+2024-04-12,(no decision today),HOLD,0,none,31.92,31.49,2585.44,240,10143.04,-199.2
+2024-04-15,(no decision today),HOLD,0,none,31.83,31.29,2585.44,240,10095.04,-48.0
+2024-04-16,(no decision today),HOLD,0,none,31.21,30.92,2585.44,240,10006.24,-88.8
+2024-04-17,(no decision today),HOLD,0,none,30.94,30.98,2585.44,240,10020.64,14.4
+2024-04-18,(no decision today),HOLD,0,none,31.18,30.8,2585.44,240,9977.44,-43.2
+2024-04-19,(no decision today),HOLD,0,none,30.91,31.27,2585.44,240,10090.24,112.8
+2024-04-22,(no decision today),HOLD,0,none,31.77,31.55,2585.44,240,10157.44,67.2
+2024-04-23,(no decision today),HOLD,0,none,31.5,31.53,2585.44,240,10152.64,-4.8
+2024-04-24,(no decision today),HOLD,0,none,31.54,31.52,2585.44,240,10150.24,-2.4
+2024-04-25,"=== DECISION === ACTION SELL 16 shares of GLW Exact allocation: 19.51% of $2,585 = $504.32 now. price_used = 31.5200 MATH CHECK: shares × price_used = $504.32 ≤ allocation $504.32 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:07:32)",SELL,16,shares,31.52,31.69,3089.76,224,10188.32,38.08
+2024-04-26,(no decision today),HOLD,0,none,31.32,31.33,3089.76,224,10107.68,-80.64
+2024-04-29,(no decision today),HOLD,0,none,31.37,31.79,3089.76,224,10210.72,103.04
+2024-04-30,(no decision today),HOLD,0,none,31.87,33.1131,3089.76,224,10507.1,296.37

@@ -166,9 +166,7 @@ export default function DashboardPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-2 gradient-text">
                 Futures AI Trader
               </h1>
-              <p className="text-[var(--foreground-secondary)] text-lg">
-                LLM-Powered Algorithmic Trading Platform
-              </p>
+              
             </div>
             <div className="flex items-center gap-4">
               {/* Capital Management */}
@@ -248,7 +246,6 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <span className="text-2xl">📈</span>
                 Market Overview
               </h2>
               <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
@@ -267,28 +264,28 @@ export default function DashboardPage() {
           <MetricCard
             title="Available Capital"
             value={`$${(availableCash !== null ? availableCash : health?.broker_capital || 0).toFixed(2)}`}
-            icon="💰"
+            icon="$"
             trend={null}
             animate={animateNumbers}
           />
           <MetricCard
             title="Active Positions"
             value={health?.num_positions.toString() || '0'}
-            icon="📊"
+            icon="#"
             trend={null}
             animate={animateNumbers}
           />
           <MetricCard
             title="Total P&L"
             value={`$${totalPnL.toFixed(2)}`}
-            icon={totalPnL >= 0 ? '📈' : '📉'}
+            icon={totalPnL >= 0 ? '↑' : '↓'}
             trend={totalPnL >= 0 ? 'up' : 'down'}
             animate={animateNumbers}
           />
           <MetricCard
             title="Events Cached"
             value={health?.num_events?.toString() || '0'}
-            icon="🔔"
+            icon="i"
             trend={null}
             animate={animateNumbers}
           />
@@ -348,7 +345,6 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-3">
-                  <span className="text-3xl">🤖</span>
                   AI Investment Strategies
                 </h2>
                 <p className="text-sm text-[var(--foreground-secondary)] mt-2">
@@ -371,7 +367,6 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <span className="text-3xl">🚀</span>
                 Daily Price Jumps
               </h2>
               <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
@@ -395,7 +390,6 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <span className="text-3xl">📉</span>
                 Daily Price Dips
               </h2>
               <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
@@ -420,7 +414,6 @@ export default function DashboardPage() {
         <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <span className="text-3xl">📊</span>
               Big Daily Price Movements
             </h2>
             <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
@@ -446,7 +439,6 @@ export default function DashboardPage() {
         <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <span className="text-3xl">📰</span>
               Market News
             </h2>
             <span className="text-xs md:text-sm text-[var(--foreground-secondary)]">
@@ -469,7 +461,6 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <div className="glass-card rounded-2xl p-6 md:p-8 mb-8 fade-in-up">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <span className="text-3xl">⚡</span>
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -477,28 +468,28 @@ export default function DashboardPage() {
               href="/trades"
               title="Execute Trade"
               description="Open new positions"
-              icon="🎯"
+              icon="→"
               color="blue"
             />
             <ActionButton
               href="/positions"
               title="Manage Positions"
               description="View & modify holdings"
-              icon="💼"
+              icon="≡"
               color="purple"
             />
             <ActionButton
               href="/analytics"
               title="View Analytics"
               description="Performance insights"
-              icon="📊"
+              icon="▲"
               color="green"
             />
             <ActionButton
               href="/simulation"
               title="Run Simulation"
               description="Backtest strategies"
-              icon="🧪"
+              icon="⟳"
               color="purple"
             />
           </div>
@@ -507,7 +498,6 @@ export default function DashboardPage() {
         {/* Positions Table */}
         <div className="glass-card rounded-2xl p-6 md:p-8 fade-in-up">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <span className="text-3xl">💼</span>
             Current Positions
           </h2>
           {positions && positions.positions.length > 0 ? (
@@ -553,7 +543,6 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">📊</div>
               <p className="text-[var(--foreground-secondary)] text-lg">No active positions</p>
               <p className="text-sm text-[var(--foreground-secondary)] mt-2">Execute a trade to get started</p>
             </div>

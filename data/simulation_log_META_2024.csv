@@ -1,5 +1,5 @@
 date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_value,daily_pnl
-2024-01-03,"=== DECISION === ACTION BUY 7 shares of META Exact allocation: 25.00% of $10,000 = $2,500.00 now. price_used = 346.2499 MATH CHECK: shares × price_used = $2,423.75 ≤ allocation $2,500.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T11:34:32)",BUY,7,shares,346.02,344.39,7577.86,7,9988.59,-11.41
+2024-01-03,"=== DECISION === ACTION BUY 7 shares of META Exact allocation: 25.00% of $10,000 = $2,500.00 now. price_used = 346.2499 MATH CHECK: shares × price_used = $2,423.75 ≤ allocation $2,500.00 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:05:53)",BUY,7,shares,346.02,344.39,7577.86,7,9988.59,-11.41
 2024-01-04,(no decision today),HOLD,0,none,344.25,346.9956,7577.86,7,10006.83,18.24
 2024-01-05,(no decision today),HOLD,0,none,346.8,352.28,7577.86,7,10043.82,36.99
 2024-01-06,(no decision today),HOLD,0,none,352.38,352.49,7577.86,7,10045.29,1.47
@@ -8,7 +8,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-01-10,(no decision today),HOLD,0,none,357.65,372.25,7577.86,7,10183.61,102.55
 2024-01-11,(no decision today),HOLD,0,none,372.15,368.09,7577.86,7,10154.49,-29.12
 2024-01-12,(no decision today),HOLD,0,none,368.1,374.33,7577.86,7,10198.17,43.68
-2024-01-13,"=== DECISION === ACTION BUY 5 shares of META Exact allocation: 25.00% of $7,578 = $1,894.46 now. price_used = 374.3300 MATH CHECK: shares × price_used = $1,871.65 ≤ allocation $1,894.46 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T11:34:38)",BUY,5,shares,374.331,374.0201,5706.2,12,10194.45,-3.72
+2024-01-13,"=== DECISION === ACTION BUY 5 shares of META Exact allocation: 25.00% of $7,578 = $1,894.46 now. price_used = 374.3300 MATH CHECK: shares × price_used = $1,871.65 ≤ allocation $1,894.46 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:05:56)",BUY,5,shares,374.331,374.0201,5706.2,12,10194.45,-3.72
 2024-01-16,(no decision today),HOLD,0,none,372.0,367.8,5706.2,12,10119.81,-74.64
 2024-01-17,(no decision today),HOLD,0,none,367.77,368.18,5706.2,12,10124.36,4.56
 2024-01-18,(no decision today),HOLD,0,none,367.83,376.9,5706.2,12,10229.0,104.64
@@ -18,7 +18,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-01-23,(no decision today),HOLD,0,none,381.75,387.05,5706.2,12,10350.81,63.24
 2024-01-24,(no decision today),HOLD,0,none,387.3,392.1,5706.2,12,10411.41,60.6
 2024-01-25,(no decision today),HOLD,0,none,392.79,391.3,5706.2,12,10401.81,-9.6
-2024-01-26,"=== DECISION === ACTION BUY 3 shares of META Exact allocation: 25.00% of $5,706 = $1,426.55 now. price_used = 391.3000 MATH CHECK: shares × price_used = $1,173.90 ≤ allocation $1,426.55 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T11:34:41)",BUY,3,shares,391.26,393.55,4532.43,15,10435.67,33.87
+2024-01-26,"=== DECISION === ACTION BUY 3 shares of META Exact allocation: 25.00% of $5,706 = $1,426.55 now. price_used = 391.3000 MATH CHECK: shares × price_used = $1,173.90 ≤ allocation $1,426.55 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:06:00)",BUY,3,shares,391.26,393.55,4532.43,15,10435.67,33.87
 2024-01-27,(no decision today),HOLD,0,none,393.9,394.0,4532.43,15,10442.42,6.75
 2024-01-29,(no decision today),HOLD,0,none,395.9,403.5,4532.43,15,10584.92,142.5
 2024-01-30,(no decision today),HOLD,0,none,403.79,391.5,4532.43,15,10404.92,-180.0
@@ -28,7 +28,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-02-03,(no decision today),HOLD,0,none,473.21,472.9,4532.43,15,11625.92,-4.65
 2024-02-05,(no decision today),HOLD,0,none,472.4,459.4,4532.43,15,11423.42,-202.5
 2024-02-06,(no decision today),HOLD,0,none,459.3001,453.1131,4532.43,15,11329.12,-94.3
-2024-02-07,"=== DECISION === ACTION BUY 2 shares of META Exact allocation: 25.00% of $4,532 = $1,133.11 now. price_used = 453.1131 MATH CHECK: shares × price_used = $906.23 ≤ allocation $1,133.11 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T11:34:45)",BUY,2,shares,453.3,468.5,3625.83,17,11590.33,261.2
+2024-02-07,"=== DECISION === ACTION BUY 2 shares of META Exact allocation: 25.00% of $4,532 = $1,133.11 now. price_used = 453.1131 MATH CHECK: shares × price_used = $906.23 ≤ allocation $1,133.11 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:06:04)",BUY,2,shares,453.3,468.5,3625.83,17,11590.33,261.2
 2024-02-08,(no decision today),HOLD,0,none,468.45,469.86,3625.83,17,11613.44,23.12
 2024-02-09,(no decision today),HOLD,0,none,469.8,467.8,3625.83,17,11578.43,-35.02
 2024-02-10,(no decision today),HOLD,0,none,467.95,468.1,3625.83,17,11583.53,5.1
@@ -38,7 +38,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-02-15,(no decision today),HOLD,0,none,473.65,483.5001,3625.83,17,11845.33,168.3
 2024-02-16,(no decision today),HOLD,0,none,483.52,472.25,3625.83,17,11654.08,-191.25
 2024-02-17,(no decision today),HOLD,0,none,472.5,471.8399,3625.83,17,11647.1,-6.97
-2024-02-20,"=== DECISION === ACTION BUY 1 shares of META Exact allocation: 25.00% of $3,626 = $906.46 now. price_used = 471.8399 MATH CHECK: shares × price_used = $471.84 ≤ allocation $906.46 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T11:34:50)",BUY,1,shares,471.6,471.01,3154.23,18,11632.41,-14.7
+2024-02-20,"=== DECISION === ACTION BUY 1 shares of META Exact allocation: 25.00% of $3,626 = $906.46 now. price_used = 471.8399 MATH CHECK: shares × price_used = $471.84 ≤ allocation $906.46 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:06:07)",BUY,1,shares,471.6,471.01,3154.23,18,11632.41,-14.7
 2024-02-21,(no decision today),HOLD,0,none,470.75,473.85,3154.23,18,11683.53,51.12
 2024-02-22,(no decision today),HOLD,0,none,474.15,485.5545,3154.23,18,11894.21,210.68
 2024-02-23,(no decision today),HOLD,0,none,485.6,483.49,3154.23,18,11857.05,-37.16
@@ -48,7 +48,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-02-28,(no decision today),HOLD,0,none,486.05,482.55,3154.23,18,11840.12,-68.56
 2024-02-29,(no decision today),HOLD,0,none,482.61,489.87,3154.23,18,11971.89,131.76
 2024-03-01,(no decision today),HOLD,0,none,489.9,502.18,3154.23,18,12193.47,221.58
-2024-03-02,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 15.92% of $3,154 = $502.18 now. price_used = 502.1800 MATH CHECK: shares × price_used = $502.18 ≤ allocation $502.18 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T11:34:55)",SELL,1,shares,502.3,502.15,3656.53,17,12193.08,-0.39
+2024-03-02,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 15.92% of $3,154 = $502.18 now. price_used = 502.1800 MATH CHECK: shares × price_used = $502.18 ≤ allocation $502.18 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:06:11)",SELL,1,shares,502.3,502.15,3656.53,17,12193.08,-0.39
 2024-03-04,(no decision today),HOLD,0,none,504.13,496.99,3656.53,17,12105.35,-87.72
 2024-03-05,(no decision today),HOLD,0,none,496.88,490.96,3656.53,17,12002.85,-102.51
 2024-03-06,(no decision today),HOLD,0,none,490.79,496.18,3656.53,17,12091.58,88.74
@@ -58,7 +58,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-03-11,(no decision today),HOLD,0,none,504.5,488.63,3656.53,17,11963.24,-234.09
 2024-03-12,(no decision today),HOLD,0,none,487.77,500.71,3656.53,17,12168.6,205.36
 2024-03-13,(no decision today),HOLD,0,none,501.43,494.8001,3656.53,17,12068.13,-100.47
-2024-03-14,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 13.53% of $3,657 = $494.80 now. price_used = 494.8001 MATH CHECK: shares × price_used = $494.80 ≤ allocation $494.80 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T11:34:58)",SELL,1,shares,498.83,491.0,4155.36,16,12011.35,-56.77
+2024-03-14,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 13.53% of $3,657 = $494.80 now. price_used = 494.8001 MATH CHECK: shares × price_used = $494.80 ≤ allocation $494.80 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:06:15)",SELL,1,shares,498.83,491.0,4155.36,16,12011.35,-56.77
 2024-03-15,(no decision today),HOLD,0,none,490.29,484.0,4155.36,16,11899.35,-112.0
 2024-03-18,(no decision today),HOLD,0,none,487.01,495.32,4155.36,16,12080.48,181.12
 2024-03-19,(no decision today),HOLD,0,none,493.0,496.51,4155.36,16,12099.51,19.04
@@ -68,7 +68,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-03-25,(no decision today),HOLD,0,none,509.18,503.4,4155.36,16,12209.76,-88.8
 2024-03-26,(no decision today),HOLD,0,none,503.04,496.14,4155.36,16,12093.6,-116.16
 2024-03-27,(no decision today),HOLD,0,none,497.81,493.0,4155.36,16,12043.35,-50.24
-2024-03-28,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 11.86% of $4,155 = $493.00 now. price_used = 493.0000 MATH CHECK: shares × price_used = $493.00 ≤ allocation $493.00 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T11:35:02)",SELL,1,shares,493.17,486.8,4648.53,15,11950.53,-92.83
+2024-03-28,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 11.86% of $4,155 = $493.00 now. price_used = 493.0000 MATH CHECK: shares × price_used = $493.00 ≤ allocation $493.00 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:06:18)",SELL,1,shares,493.17,486.8,4648.53,15,11950.53,-92.83
 2024-04-01,(no decision today),HOLD,0,none,488.08,491.41,4648.53,15,12019.68,69.15
 2024-04-02,(no decision today),HOLD,0,none,491.73,497.37,4648.53,15,12109.08,89.4
 2024-04-03,(no decision today),HOLD,0,none,497.1,510.63,4648.53,15,12307.98,198.9
@@ -78,7 +78,7 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-04-09,(no decision today),HOLD,0,none,519.99,515.52,4648.53,15,12381.33,-70.2
 2024-04-10,(no decision today),HOLD,0,none,517.44,518.0,4648.53,15,12418.53,37.2
 2024-04-11,(no decision today),HOLD,0,none,520.95,521.2,4648.53,15,12466.53,48.0
-2024-04-12,"=== DECISION === ACTION BUY 2 shares of META Exact allocation: 25.00% of $4,649 = $1,162.13 now. price_used = 521.2000 MATH CHECK: shares × price_used = $1,042.40 ≤ allocation $1,162.13 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-09T11:35:05)",BUY,2,shares,522.51,507.6,3603.51,17,12232.71,-233.82
+2024-04-12,"=== DECISION === ACTION BUY 2 shares of META Exact allocation: 25.00% of $4,649 = $1,162.13 now. price_used = 521.2000 MATH CHECK: shares × price_used = $1,042.40 ≤ allocation $1,162.13 — OK. WHY: Signals lean bullish; initiating/adding position consistent with risk.  ✅ Saved decision_plan.txt (2025-11-12T19:06:22)",BUY,2,shares,522.51,507.6,3603.51,17,12232.71,-233.82
 2024-04-15,(no decision today),HOLD,0,none,514.11,498.35,3603.51,17,12075.46,-157.25
 2024-04-16,(no decision today),HOLD,0,none,497.01,501.21,3603.51,17,12124.08,48.62
 2024-04-17,(no decision today),HOLD,0,none,499.52,494.49,3603.51,17,12009.84,-114.24
@@ -88,5 +88,5 @@ date,advice_raw,action,qty,reason,exec_price,close_price,cash,shares,portfolio_v
 2024-04-23,(no decision today),HOLD,0,none,484.32,504.1,3603.51,17,12173.21,362.78
 2024-04-24,(no decision today),HOLD,0,none,507.68,418.85,3603.51,17,10723.96,-1449.25
 2024-04-25,(no decision today),HOLD,0,none,424.0,444.84,3603.51,17,11165.78,441.83
-2024-04-26,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 12.34% of $3,604 = $444.84 now. price_used = 444.8400 MATH CHECK: shares × price_used = $444.84 ≤ allocation $444.84 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-09T11:35:12)",SELL,1,shares,446.62,441.55,4050.13,16,11114.93,-50.86
+2024-04-26,"=== DECISION === ACTION SELL 1 shares of META Exact allocation: 12.34% of $3,604 = $444.84 now. price_used = 444.8400 MATH CHECK: shares × price_used = $444.84 ≤ allocation $444.84 — OK. WHY: Trimming exposure per signal and risk policy.  ✅ Saved decision_plan.txt (2025-11-12T19:06:25)",SELL,1,shares,446.62,441.55,4050.13,16,11114.93,-50.86
 2024-04-29,(no decision today),HOLD,0,none,444.0,431.2,4050.13,16,10949.33,-165.6

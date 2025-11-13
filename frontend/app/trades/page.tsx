@@ -84,7 +84,7 @@ export default function TradesPage() {
                   }`}
                 >
                   {formData.action === 'BUY' && <div className="absolute inset-0 bg-green-400 rounded-xl blur-xl opacity-20"></div>}
-                  <span className="relative">📈 BUY</span>
+                  <span className="relative">BUY</span>
                 </button>
                 <button
                   type="button"
@@ -96,7 +96,7 @@ export default function TradesPage() {
                   }`}
                 >
                   {formData.action === 'SELL' && <div className="absolute inset-0 bg-red-400 rounded-xl blur-xl opacity-20"></div>}
-                  <span className="relative">📉 SELL</span>
+                  <span className="relative">SELL</span>
                 </button>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function TradesPage() {
                   </>
                 ) : (
                   <>
-                    ⚡ Execute {formData.action} Order
+                    Execute {formData.action} Order
                   </>
                 )}
               </span>
@@ -191,7 +191,6 @@ export default function TradesPage() {
           {error && (
             <div className="mt-8 p-6 bg-red-500/10 border-2 border-red-500/50 rounded-xl backdrop-blur-sm">
               <div className="flex items-start gap-3">
-                <div className="text-2xl">⚠️</div>
                 <div className="flex-1">
                   <p className="text-red-400 font-bold text-lg mb-1">Trade Failed</p>
                   <p className="text-red-300">{error}</p>

@@ -93,11 +93,9 @@ export default function PortfolioHoldings() {
     return (
       <div className="glass-card rounded-2xl p-6 md:p-8">
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-          <span className="text-3xl">📊</span>
           Portfolio Holdings
         </h2>
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📭</div>
           <p className="text-xl text-gray-400 mb-2">No holdings yet</p>
           <p className="text-sm text-gray-500">Start trading to build your portfolio</p>
         </div>
@@ -109,7 +107,6 @@ export default function PortfolioHoldings() {
     <div className="glass-card rounded-2xl p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-3">
-          <span className="text-3xl">📊</span>
           Portfolio Holdings
         </h2>
         <div className="text-right">

@@ -70,19 +70,19 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
       id: 0,
       title: 'Secure',
       description: 'Conservative approach focusing on stable, blue-chip stocks with lower risk and dividend payments.',
-      icon: <span style={{ fontSize: '32px' }}>🛡️</span>
+      icon: <span style={{ fontSize: '32px', fontWeight: 'bold' }}>S</span>
     },
     {
       id: 1,
       title: 'Moderate',
       description: 'Balanced approach mixing growth potential with reasonable risk management and diversification.',
-      icon: <span style={{ fontSize: '32px' }}>⚖️</span>
+      icon: <span style={{ fontSize: '32px', fontWeight: 'bold' }}>M</span>
     },
     {
       id: 2,
       title: 'Aggressive',
       description: 'High-growth approach targeting maximum returns with higher risk tolerance in emerging sectors.',
-      icon: <span style={{ fontSize: '32px' }}>🚀</span>
+      icon: <span style={{ fontSize: '32px', fontWeight: 'bold' }}>A</span>
     }
   ];
 
@@ -381,9 +381,9 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">
-                {selectedStrategy === 'secure' && '🛡️ Secure Strategy'}
-                {selectedStrategy === 'moderate' && '⚖️ Moderate Strategy'}
-                {selectedStrategy === 'aggressive' && '🚀 Aggressive Strategy'}
+                {selectedStrategy === 'secure' && 'Secure Strategy'}
+                {selectedStrategy === 'moderate' && 'Moderate Strategy'}
+                {selectedStrategy === 'aggressive' && 'Aggressive Strategy'}
               </h2>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
@@ -464,7 +464,7 @@ export default function StrategyCards({ onStrategySelect }: StrategyCardsProps) 
                         ) : aiDecision ? (
                           <div className="ai-decision">
                             <div className="ai-decision-header">
-                              <span className="ai-label">🤖 AI Decision</span>
+                              <span className="ai-label">AI Decision</span>
                               <span className={`ai-action ${aiDecision.action.toLowerCase()}`}>
                                 {aiDecision.action}
                                 {aiDecision.shares > 0 && ` ${aiDecision.shares} shares`}

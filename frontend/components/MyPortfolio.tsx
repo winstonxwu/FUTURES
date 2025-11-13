@@ -61,14 +61,14 @@ export default function MyPortfolio() {
         onClick={handleOpen}
         className="my-portfolio-btn"
       >
-        💼 My Portfolio
+        My Portfolio
       </button>
 
       {showModal && (
         <div className="modal-overlay" onClick={handleClose}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">💼 My Portfolio</h2>
+              <h2 className="modal-title">My Portfolio</h2>
               <button className="modal-close" onClick={handleClose}>×</button>
             </div>
 

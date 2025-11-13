@@ -1,6 +1,6 @@
 ACTION
-SELL 1 shares of META
-Exact allocation: 12.34% of $3,604 = $444.84 now.
-price_used = 444.8400
-MATH CHECK: shares × price_used = $444.84 ≤ allocation $444.84 — OK.
+SELL 16 shares of GLW
+Exact allocation: 19.51% of $2,585 = $504.32 now.
+price_used = 31.5200
+MATH CHECK: shares × price_used = $504.32 ≤ allocation $504.32 — OK.
 WHY: Trimming exposure per signal and risk policy.

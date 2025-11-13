@@ -176,32 +176,32 @@ class MassiveAPIClient:
         """
         Get top gainers and losers (if available)
         Note: This endpoint may vary - using snapshot approach as fallback
-        
+
         Returns:
             Dictionary with gainers and losers
         """
         # Get today's date
         today = datetime.now().strftime("%Y-%m-%d")
-        
+
         try:
             # Try to get grouped daily data
             grouped_data = await self.get_grouped_daily(today)
-            
+
             if "results" in grouped_data:
                 results = grouped_data["results"]
-                
+
                 # Calculate percentage changes
                 for result in results:
                     if result.get("c") and result.get("o"):  # close and open
                         result["change_pct"] = ((result["c"] - result["o"]) / result["o"]) * 100
                         result["change"] = result["c"] - result["o"]
-                
+
                 # Sort by percentage change
                 sorted_results = sorted(results, key=lambda x: x.get("change_pct", 0), reverse=True)
-                
+
                 gainers = [r for r in sorted_results if r.get("change_pct", 0) > 0][:20]
                 losers = [r for r in sorted_results if r.get("change_pct", 0) < 0][:20]
-                
+
                 return {
                     "gainers": gainers,
                     "losers": losers,
@@ -210,8 +210,60 @@ class MassiveAPIClient:
         except Exception as e:
             logger.error(f"Error getting gainers/losers: {e}")
             raise
-        
+
         return {"gainers": [], "losers": [], "status": "ERROR"}
+
+    async def get_market_news(self, limit: int = 20, ticker: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get market news from Polygon.io
+
+        Args:
+            limit: Number of news articles to retrieve (max 1000)
+            ticker: Optional ticker symbol to filter news
+
+        Returns:
+            Dictionary with news articles
+        """
+        endpoint = "/reference/news"
+        params = {
+            "limit": min(limit, 1000),  # API max is 1000
+            "order": "desc",
+            "sort": "published_utc"
+        }
+
+        if ticker:
+            params["ticker"] = ticker
+
+        try:
+            response = await self._request(endpoint, params)
+
+            # Transform Polygon.io response to match our frontend format
+            news_items = []
+            if "results" in response:
+                for article in response["results"]:
+                    news_item = {
+                        "id": article.get("id", ""),
+                        "headline": article.get("title", ""),
+                        "summary": article.get("description", ""),
+                        "source": article.get("publisher", {}).get("name", "Unknown"),
+                        "url": article.get("article_url", ""),
+                        "image": article.get("image_url", ""),
+                        "datetime": int(datetime.fromisoformat(article.get("published_utc", "").replace("Z", "+00:00")).timestamp()) if article.get("published_utc") else 0,
+                        "datetime_formatted": article.get("published_utc", ""),
+                        "category": "general",
+                        "related": ",".join(article.get("tickers", [])) if article.get("tickers") else "",
+                    }
+                    news_items.append(news_item)
+
+            return {
+                "news": news_items,
+                "timestamp": datetime.now().isoformat(),
+                "source": "massive",
+                "status": "OK"
+            }
+        except Exception as e:
+            logger.error(f"Error fetching news: {e}")
+            raise
 
 
 # Global client instance
